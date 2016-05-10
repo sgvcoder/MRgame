@@ -5,65 +5,95 @@
 	<nav class="navbar navbar-inverse">
 		<ul class="nav navbar-nav">
 			<li role="presentation" class="active"><a href="/dashboard">Dashboard</a></li>
-			<li role="presentation"><a href="#" id="find_game">Find Game (1x1)</a></li>
-			<li role="presentation"><a href="/createGame">Create Game</a></li>
+			<!-- <li role="presentation"><a href="#" id="find_game">Find Game (1x1)</a></li> -->
+			<!-- <li role="presentation"><a href="/createGame">Create Game</a></li> -->
 		</ul>
 	</nav>
 
 	<div class="row">
-		<div class="col-lg-12 shadow-box dashboard-box">
 
+		<div class="col-md-9">
 			<div class="row">
-				<div class="col-sm-2 text-center">
-					<span class="name">[name]</span>
-					<img src="/images/characters/butterfly.jpg" width="100%">
-				</div>
-				<div class="col-sm-2">
-					<span class="title">Statistics</span>
-					<ul class="statistics">
-						<li>
-							<span>Health</span>
-							<span>120</span>
-						</li>
-						<li>
-							<span>Strength</span>
-							<span>10</span>
-						</li>
-						<li>
-							<span>Agility</span>
-							<span>7</span>
-						</li>
-						<li>
-							<span>Endurance</span>
-							<span>4</span>
-						</li>
-						<li>
-							<span>Trick</span>
-							<span>7</span>
-						</li>
-						<li>
-							<span>Attentiveness</span>
-							<span>8</span>
-						</li>
-						<li>
-							<span>Intellect</span>
-							<span>5</span>
-						</li>
-					</ul>
-				</div>
-				<div class="col-sm-8">
-					<span class="title">Skills</span>
-					<ul class="skills">
-						<li>
-							<div class="skill-box" data-toggle="tooltip" data-placement="bottom" title="[skill name]">
-								<img src="/images/skills/icon_skill_magic18.jpg">
-							</div>
-						</li>
-					</ul>
-				</div>
-			</div>
 
+				<!-- chat -->
+				<div class="col-lg-12 shadow-box">
+					<% include ./chat.ejs %>
+				</div>
+				<!-- end chat -->
+
+				<!-- pers info -->
+				<div class="col-lg-12 shadow-box padding-box dashboard-box">
+					<div class="row">
+						<div class="col-sm-2 text-center">
+							<span class="name">[name]</span>
+							<img src="/images/characters/butterfly.jpg" width="100%">
+						</div>
+						<div class="col-sm-2">
+							<span class="title">Statistics</span>
+							<ul class="statistics">
+								<li>
+									<span>Health</span>
+									<span>120</span>
+								</li>
+								<li>
+									<span>Strength</span>
+									<span>10</span>
+								</li>
+								<li>
+									<span>Agility</span>
+									<span>7</span>
+								</li>
+								<li>
+									<span>Endurance</span>
+									<span>4</span>
+								</li>
+								<li>
+									<span>Trick</span>
+									<span>7</span>
+								</li>
+								<li>
+									<span>Attentiveness</span>
+									<span>8</span>
+								</li>
+								<li>
+									<span>Intellect</span>
+									<span>5</span>
+								</li>
+							</ul>
+						</div>
+						<div class="col-sm-6">
+							<span class="title">Skills</span>
+							<ul class="skills">
+								<li>
+									<div class="skill-box" data-toggle="tooltip" data-placement="bottom" title="[skill name]">
+										<img src="/images/skills/icon_skill_magic18.jpg">
+									</div>
+								</li>
+							</ul>
+						</div>
+						<div class="col-sm-2">
+							<a href="#" class="btn btn-default" id="find_game">Find Game<br>(1x1)</a>
+						</div>
+					</div>
+
+				</div>
+				<!-- end pers info -->
+
+			</div>
 		</div>
+
+		<!-- users list -->
+		<div class="col-md-3 shadow-box">
+			<ul class="tabs">
+				<li>All</li>
+				<li>Friends</li>
+			</ul>
+			<div class="padding-box">
+				[users list]
+			</div>
+		</div>
+		<!-- end users list -->
+
 	</div>
 
 	<div class="row hidden">

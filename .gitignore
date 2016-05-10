@@ -83,3 +83,11 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+.gitignore
+MRgame_____.sublime-project
+MRgame_____.sublime-workspace
+dev/config/database.js
+dev/public/sass/3dgame/_chat.scss
+dev/public/sass/3dgame/_elements.scss
+dev/views/3d/chat.ejs
