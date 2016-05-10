@@ -38,3 +38,41 @@
 		}
 	}
 }
+
+.chat-nav{
+	position: relative;
+
+	& > input{
+		width: 100%;
+		background: #353535;
+		color: #a5a5a5;
+		border: 1px solid #111111;
+		font-size: 12px;
+		padding: 2px 50px 2px 5px;
+		transition: .3s;
+
+		&:active{
+			border: 1px solid #111111;
+		}
+
+		&:focus{
+			border: 1px solid #111111;
+		}
+	}
+
+	& > a.chat-submit{
+		text-transform: uppercase;
+		position: absolute;
+		top: 0;
+		right: 0;
+		background: #111111;
+		padding: 3px 5px;
+		color: #a5a5a5;
+		font-size: 12px;
+		font-weight: bold;
+
+		&:hover{
+			text-decoration: none;
+		}
+	}
+}
