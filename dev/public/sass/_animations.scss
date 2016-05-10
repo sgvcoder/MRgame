@@ -1,0 +1,26 @@
+// animations.scss
+
+@keyframes zoom-animation-frame {
+	0%   {
+		width: 30px;
+    	height: 30px;
+    	left: -15px;
+    	top: -15px;
+	}
+	100% {
+		width: 20px;
+    	height: 20px;
+    	left: -10px;
+    	top: -10px;
+	}
+}
+@keyframes zoom-animation {
+	0%   {
+		width: 30px;
+    	height: 30px;
+	}
+	100% {
+		width: 20px;
+    	height: 20px;
+	}
+}

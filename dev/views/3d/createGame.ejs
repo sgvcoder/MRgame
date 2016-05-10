@@ -1,0 +1,44 @@
+<!-- views/game.ejs -->
+<% include ./header.ejs %>
+
+<div class="container">
+	<nav class="navbar navbar-inverse">
+		<ul class="nav navbar-nav">
+			<li role="presentation"><a href="/dashboard">Dashboard</a></li>
+			<li role="presentation" class="active"><a href="/createGame">Create Game</a></li>
+		</ul>
+	</nav>
+
+	<div class="row">
+		<div class="col-lg-12 shadow-box creategame-box">
+
+			<div class="row">
+				<div class="col-sm-4 group">
+					<span class="title" id="goto_group_1">[group 1]</span>
+					<ul id="group_1"></ul>
+				</div>
+				<div class="col-sm-4 mapinfo">
+					<span class="title">[map name]</span>
+					<div class="map">
+						<img src="/images/textures/dota_map_full_compress2_min.jpg" width="100%">
+					</div>
+
+					<div class="text-center">
+						<button class="btn btn-dark btn-lg">Start Game!</button>
+					</div>
+				</div>
+				<div class="col-sm-4 group">
+					<span class="title" id="goto_group_2">[group 2]</span>
+					<ul id="group_2"></ul>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+<!-- views/3dgame/footer.ejs -->
+<% include ./footer.ejs %>
+<script src="/js/3dgame/index.js"></script>
+<script src="/js/3dgame/createGame.js"></script>

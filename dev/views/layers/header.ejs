@@ -1,0 +1,71 @@
+<!-- views/login.ejs -->
+<!doctype html>
+<html>
+    <head>
+        <title><%= title %></title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+        <style>
+            .jumbotron h2 span{
+                position: relative;
+                top: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-xs-6">
+                </div>
+                <% if (user) { %>
+                    <div class="col-lg-6 col-xs-6 text-right">
+                        <a href="/profile" class="quick-sign-in">Profile</a>
+                        &nbsp;|&nbsp;
+                        <a href="/logout" class="quick-sign-up">Logout</a>
+                    </div>
+                <% } else { %>
+                    <div class="col-lg-6 col-xs-6 text-right">
+                        <a href="/login" class="quick-sign-in">Sign in</a>
+                        &nbsp;|&nbsp;
+                        <a href="/signup" class="quick-sign-up">Sign up</a>
+                    </div>
+                <% } %>
+                
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="header">
+                <div class="row">
+                    <!-- <div class="col-lg-4 col-md-4 col-sm-4 col-xs-10">
+                        <a href="https://makerise.net">
+                            <img src="http://makerise.net/wp-content/themes/MakeRise/img/MakeRise.png">
+                        </a>
+                    </div> -->
+                    <!-- <div class="hidden-lg hidden-md hidden-sm col-xs-2">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-2" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                    </div> -->
+                    <!-- <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                        <nav class="navbar navbar-right">
+                            <div class="container-fluid">
+                                <div class="collapse navbar-collapse" id="navbar-collapse-2">
+                                    <ul class="nav navbar-nav">
+                                        <li class=""><a href="/">Home</a></li>
+                                        <li class=""><a href="/contacts">Contacs</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </nav>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+        <hr>
+        

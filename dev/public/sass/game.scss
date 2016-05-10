@@ -1,0 +1,199 @@
+// game.scss
+
+@import 'functions';
+@import 'animations';
+
+@import '3dgame/index';
+
+$border_color: #d6d6d6;
+$cell_width: 30px;
+$cell_height: 30px;
+$cell_color: #fff;
+$cell_color_hover: #fff;
+
+$empty_color: #fff;
+$my_color: #0f0;
+$enemy_color: #f00;
+
+
+$cell_color_active: #0f0;
+$cell_color_my: #fff;
+$cell_color_enemy: #f00;
+
+span.ball{
+    display: inline-block;
+    width: 1px;
+    height: 1px;
+    position: relative;
+    cursor: pointer;
+
+    span{
+	    background: $empty_color;
+	    border-radius: 50%;
+	    display: inline-block;
+	    width: 20px;
+	    height: 20px;
+	    transition: .5s;
+	    position: absolute;
+	    left: -10px;
+	    top: -10px;
+	    box-shadow: 2px 2px 6px #ababab;
+
+	    span{
+		    box-shadow: inset 0 0 7px #909090;
+		    position: relative;
+		    left: 0;
+		    top: 0;
+		}
+	}
+}
+
+.game{
+	.board{
+		margin: 0 auto;
+
+		td{
+			border: 1px solid $border_color;
+			width: $cell_width;
+			height: $cell_height;
+			background: $cell_color;
+			text-align: center;
+			vertical-align: middle;
+			line-height: 0;
+    		font-size: 0;
+
+			&:hover{
+				background: $cell_color_hover;
+			}
+
+			&.my{
+				span{
+					background: $my_color;
+
+					span{
+						@include animation(zoom-animation-frame 1s);
+						width: 20px;
+					    height: 20px;
+					    left: -10px;
+					    top: -10px;
+					    box-shadow: 2px 2px 6px #222;
+
+					    span{
+					    	@include animation(zoom-animation 1s);
+							width: 20px;
+						    height: 20px;
+						    left: 0;
+					    	top: 0;
+					    	box-shadow: inset 0 0 7px #686868;
+					    }
+					}
+				}
+			}
+
+			&.enemy{
+				span{
+					background: $enemy_color;
+
+					span{
+						@include animation(zoom-animation-frame 1s);
+						width: 20px;
+					    height: 20px;
+					    left: -10px;
+					    top: -10px;
+					    box-shadow: 2px 2px 6px #222;
+
+					    span{
+					    	@include animation(zoom-animation 1s);
+							width: 20px;
+						    height: 20px;
+						    left: 0;
+					    	top: 0;
+					    	box-shadow: inset 0 0 7px #686868;
+					    }
+					}
+				}
+			}
+		}
+	}
+}
+
+.game_steps{
+	margin: 0 auto;
+
+	td{
+		width: 40px;
+		vertical-align: middle;
+		text-align: center;
+
+		&.my{
+			span{
+				background: $my_color;
+
+				span{
+					@include animation(zoom-animation-frame 1s);
+					width: 20px;
+				    height: 20px;
+				    left: -10px;
+				    top: -10px;
+				    box-shadow: 2px 2px 6px #222;
+
+				    span{
+				    	@include animation(zoom-animation 1s);
+						width: 20px;
+					    height: 20px;
+					    left: 0;
+				    	top: 0;
+				    	box-shadow: inset 0 0 7px #686868;
+				    }
+				}
+			}
+		}
+
+		&.enemy{
+			span{
+				background: $enemy_color;
+
+				span{
+					@include animation(zoom-animation-frame 1s);
+					width: 20px;
+				    height: 20px;
+				    left: -10px;
+				    top: -10px;
+				    box-shadow: 2px 2px 6px #222;
+
+				    span{
+				    	@include animation(zoom-animation 1s);
+						width: 20px;
+					    height: 20px;
+					    left: 0;
+				    	top: 0;
+				    	box-shadow: inset 0 0 7px #686868;
+				    }
+				}
+			}
+		}
+
+		&.active{
+			span{
+				span{
+					width: 30px;
+					height: 30px;
+
+					span{
+						width: 30px;
+						height: 30px;
+					}
+				}
+			}
+		}
+	}
+}
+
+.enemy_mouse{
+	position: absolute;
+	display: block;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: #f00;
+}

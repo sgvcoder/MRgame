@@ -1,0 +1,44 @@
+{
+  "name": "Game",
+  "version": "0.0.1",
+  "description": "Online multy player game",
+  "author": {
+    "name": "\"sgvcoder\" Serg G",
+    "url": "https://makerise.net/"
+  },
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.15.0",
+    "connect-flash": "^0.1.1",
+    "cookie": "^0.2.3",
+    "cookie-parser": "^1.4.1",
+    "ejs": "^2.4.1",
+    "ejs-locals": "^1.0.2",
+    "express": "^4.13.3",
+    "express-session": "^1.13.0",
+    "morgan": "^1.7.0",
+    "mysql": "^2.10.2",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "passport.socketio": "^3.6.1",
+    "socket.io": "^1.3.7",
+    "socket.io-bundle": "^0.1.2",
+    "socket.io-passport": "^0.1.1"
+  },
+  "devDependencies": {
+    "del": "^2.2.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-clean-css": "^2.0.6",
+    "gulp-concat": "^2.6.0",
+    "gulp-ejs": "^2.1.1",
+    "gulp-ejs-precompiler": "^0.2.0",
+    "gulp-if": "^2.0.0",
+    "gulp-insert": "^0.5.0",
+    "gulp-livereload": "^3.8.1",
+    "gulp-notify": "^2.2.0",
+    "gulp-sass": "^2.3.1",
+    "gulp-uglify": "^1.5.3",
+    "gulp-useref": "^3.1.0",
+    "gulp-watch": "^4.3.5"
+  }
+}

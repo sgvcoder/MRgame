@@ -1,0 +1,302 @@
+<!-- views/3d/header.ejs -->
+<% include ./header.ejs %>
+
+<div class="container">
+	<nav class="navbar navbar-inverse">
+		<ul class="nav navbar-nav">
+			<li role="presentation" class="active"><a href="/dashboard">Dashboard</a></li>
+			<li role="presentation"><a href="#" id="find_game">Find Game (1x1)</a></li>
+			<li role="presentation"><a href="/createGame">Create Game</a></li>
+		</ul>
+	</nav>
+
+	<div class="row">
+		<div class="col-lg-12 shadow-box dashboard-box">
+
+			<div class="row">
+				<div class="col-sm-2 text-center">
+					<span class="name">[name]</span>
+					<img src="/images/characters/butterfly.jpg" width="100%">
+				</div>
+				<div class="col-sm-2">
+					<span class="title">Statistics</span>
+					<ul class="statistics">
+						<li>
+							<span>Health</span>
+							<span>120</span>
+						</li>
+						<li>
+							<span>Strength</span>
+							<span>10</span>
+						</li>
+						<li>
+							<span>Agility</span>
+							<span>7</span>
+						</li>
+						<li>
+							<span>Endurance</span>
+							<span>4</span>
+						</li>
+						<li>
+							<span>Trick</span>
+							<span>7</span>
+						</li>
+						<li>
+							<span>Attentiveness</span>
+							<span>8</span>
+						</li>
+						<li>
+							<span>Intellect</span>
+							<span>5</span>
+						</li>
+					</ul>
+				</div>
+				<div class="col-sm-8">
+					<span class="title">Skills</span>
+					<ul class="skills">
+						<li>
+							<div class="skill-box" data-toggle="tooltip" data-placement="bottom" title="[skill name]">
+								<img src="/images/skills/icon_skill_magic18.jpg">
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="row hidden">
+		<div class="col-lg-12 shadow-box upgrade-box">
+
+			<span class="title">Upgrade Page</span>
+
+			<div class="row">
+				<div class="col-md-6">
+					<div class="item-box">
+						<img src="../../public/images/items/crystal_1.png">
+						<span>[name 1]</span>
+					</div>
+					<div class="item-box">
+						<img src="../../public/images/items/crystal_2.png">
+						<span>[name 2]</span>
+					</div>
+				</div>
+			</div>
+
+			<br>
+
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="tree">
+						<ul>
+							<li>
+								<div class="energy fire">
+									<img src="../../public/images/items/fire.png">
+									<div>
+										<span>fire</span>
+									</div>
+								</div>
+								<ul>
+									<li>
+										<div class="energy fire">
+											<img src="../../public/images/items/fire.png">
+											<div>
+												<span>fire</span>
+											</div>
+										</div>
+										<ul>
+											<li>
+												<div class="energy fire">
+													<img src="../../public/images/items/fire.png">
+													<div>
+														<span>fire</span>
+													</div>
+												</div>
+											</li>
+											<li>
+												<div class="energy fire">
+													<img src="../../public/images/items/fire.png">
+													<div>
+														<span>fire</span>
+													</div>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+							<li>
+								<div class="energy water">
+									<img src="../../public/images/items/water.png">
+									<div>
+										<span>water</span>
+									</div>
+								</div>
+								<ul>
+									<li>
+										<div class="energy water">
+											<img src="../../public/images/items/water.png">
+											<div>
+												<span>water</span>
+											</div>
+										</div>
+										<ul>
+											<li>
+												<div class="energy water">
+													<img src="../../public/images/items/water.png">
+													<div>
+														<span>water</span>
+													</div>
+												</div>
+											</li>
+											<li>
+												<div class="energy water">
+													<img src="../../public/images/items/water.png">
+													<div>
+														<span>water</span>
+													</div>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+							<li>
+								<div class="energy earth">
+									<img src="../../public/images/items/earth.png">
+									<div>
+										<span>water</span>
+									</div>
+								</div>
+								<ul>
+									<li>
+										<div class="energy earth">
+											<img src="../../public/images/items/earth.png">
+											<div>
+												<span>water</span>
+											</div>
+										</div>
+										<ul>
+											<li>
+												<div class="energy earth">
+													<img src="../../public/images/items/earth.png">
+													<div>
+														<span>water</span>
+													</div>
+												</div>
+											</li>
+											<li>
+												<div class="energy earth">
+													<img src="../../public/images/items/earth.png">
+													<div>
+														<span>water</span>
+													</div>
+												</div>
+											</li>
+										</ul>
+									</li>
+									<li>
+										<div class="energy earth">
+											<img src="../../public/images/items/earth.png">
+											<div>
+												<span>water</span>
+											</div>
+										</div>
+										<ul>
+											<li>
+												<div class="energy earth">
+													<img src="../../public/images/items/earth.png">
+													<div>
+														<span>water</span>
+													</div>
+												</div>
+											</li>
+											<li>
+												<div class="energy earth">
+													<img src="../../public/images/items/earth.png">
+													<div>
+														<span>water</span>
+													</div>
+												</div>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<hr>
+
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<div class="energy fire">
+						<img src="../../public/images/items/fire.png">
+						<div>
+							<span>fire</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy water">
+						<img src="../../public/images/items/water.png">
+						<div>
+							<span>water</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy earth">
+						<img src="../../public/images/items/earth.png">
+						<div>
+							<span>earth</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy wind">
+						<img src="../../public/images/items/wind.png">
+						<div>
+							<span>wind</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy light">
+						<img src="../../public/images/items/light.png">
+						<div>
+							<span>light</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy darkness">
+						<img src="../../public/images/items/darkness.png">
+						<div>
+							<span>darkness</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy metal">
+						<img src="../../public/images/items/metal.png">
+						<div>
+							<span>metal</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+					<div class="energy blood">
+						<img src="../../public/images/items/blood.png">
+						<div>
+							<span>blood</span>
+							<span>10pcs</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- views/3d/footer.ejs -->
+<% include ./footer.ejs %>
+<script src="/js/3dgame/index.js"></script>
+<script src="/js/3dgame/dashboard.js"></script>

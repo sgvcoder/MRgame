@@ -1,0 +1,42 @@
+<!-- views/game.ejs -->
+<% include ./layers/header.ejs %>
+
+<div class="container game">
+
+	<div class="row">
+		<ul class="nav nav-pills">
+		  <li role="presentation" class="pull-right"><a href="#" id="quit">Quit!</a></li>
+		</ul>
+	</div>
+
+	<hr>
+
+	<div class="row">
+
+		<div class="col-sm-12">
+			<div class="well text-center">
+				<table class="board" id="board"></table>
+
+				<table class="game_steps" id="game_steps">
+					<tr>
+						<td class="my">
+							<span class="ball"><span><span></span></span></span>
+						</td>
+						<td class="enemy">
+							<span class="ball"><span><span></span></span></span>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+
+<span class="enemy_mouse" id="enemy_mouse"></span>
+
+<% include ./layers/footer.ejs %>
+
+<%- stylesheet('/css/game.css') %>
+<%- script('/js/game.js') %>
