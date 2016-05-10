@@ -1,9 +1,23 @@
-<script src="/libs/jquery-1.10.2.min.js"></script>
-<script src="/libs/bootstrap.min.js"></script>
-<script src="/socket.io/socket.io.js"></script>
+		</div>
+		<script src="/libs/jquery-1.10.2.min.js"></script>
+		<script src="/libs/bootstrap.min.js"></script>
+		<script src="/libs/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
 
-<script>
-var socket = io(),
-	psocket = io('http://192.168.0.103:9001');
-socket.emit('findgame', 'true');
-</script>
+		<script>
+		// sockets init
+		var socket = io(),
+			psocket = io('http://192.168.0.103:9001');
+		socket.emit('findgame', 'true');
+
+		// set wrap height
+		$('#wrap-mrScrollbar').css({
+			height: $(window).height()
+		});
+
+		// scroll init
+		$(".mrScrollbar").mCustomScrollbar();
+		</script>
+
+	</body>
+</html>

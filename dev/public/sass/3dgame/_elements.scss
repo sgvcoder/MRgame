@@ -1,5 +1,16 @@
 // elements.scss
 
+// scroll
+.mrScrollbar.mCustomScrollbar .mCSB_dragger_bar{
+	transition: .3s;
+
+	&:hover{
+		width: 15px;
+		opacity: .7;
+	}
+}
+// end scroll
+
 // tabs
 ul.tabs{
 	& li{

@@ -1,0 +1,28 @@
+// users-list.scss
+
+.users-list{
+	height: 323px;
+	padding: 5px 10px;
+
+	& ul{
+		& li{
+			border-bottom: 1px solid #111111;
+
+			& .avatar{
+				display: inline-block;
+				width: 30px;
+				margin: 0 5px 0 0;
+			}
+
+			& .name{
+				cursor: pointer;
+				color: #a5a5a5;
+				transition: .3s;
+
+				&:hover{
+					color: #ffffff;
+				}
+			}
+		}
+	}
+}

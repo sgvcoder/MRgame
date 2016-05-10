@@ -5,7 +5,7 @@
 	height: 300px;
 	background: #454545;
 	color: #ffffff;
-	overflow-y: scroll;
+	box-shadow: inset 0 0 20px #000000;
 
 	& ul{
 		& li{
@@ -17,6 +17,18 @@
 
 				&::after{
 					content: ': ';
+				}
+
+				&.you{
+					color: #00ff00;
+				}
+
+				&.pm{
+					color: #ff0000;
+				}
+
+				&.party{
+					color: #00ffff;
 				}
 			}
 

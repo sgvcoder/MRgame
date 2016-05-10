@@ -2,11 +2,13 @@
 
 @import '3dgame/elements';
 @import '3dgame/chat';
+@import '3dgame/users-list';
 
 body{
 	color: #ffffff;
 	background: #242424;
 	font-size: 14px;
+	user-select: none;
 }
 
 ul{

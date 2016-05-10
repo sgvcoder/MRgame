@@ -2,13 +2,19 @@
 <% include ./header.ejs %>
 
 <div class="container">
-	<nav class="navbar navbar-inverse">
-		<ul class="nav navbar-nav">
-			<li role="presentation" class="active"><a href="/dashboard">Dashboard</a></li>
-			<!-- <li role="presentation"><a href="#" id="find_game">Find Game (1x1)</a></li> -->
-			<!-- <li role="presentation"><a href="/createGame">Create Game</a></li> -->
-		</ul>
-	</nav>
+	<div class="row">
+		<nav class="navbar navbar-inverse">
+			<ul class="nav navbar-nav">
+				<li role="presentation" class="active"><a href="/dashboard">Dashboard</a></li>
+				<!-- <li role="presentation"><a href="#" id="find_game">Find Game (1x1)</a></li> -->
+				<!-- <li role="presentation"><a href="/createGame">Create Game</a></li> -->
+			</ul>
+
+			<ul class="nav navbar-nav pull-right">
+				<li role="presentation"><a href="/logout">Logout</a></li>
+			</ul>
+		</nav>
+	</div>
 
 	<div class="row">
 
@@ -85,11 +91,60 @@
 		<!-- users list -->
 		<div class="col-md-3 shadow-box">
 			<ul class="tabs">
-				<li>All</li>
+				<li class="active">All</li>
 				<li>Friends</li>
 			</ul>
-			<div class="padding-box">
-				[users list]
+			<div class="users-list mrScrollbar"data-mcs-theme="dark">
+				<ul>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+					<li>
+						<span class="avatar"><img src="/images/characters/butterfly.jpg" width="100%"></span>
+						<span class="name">sgvcoder</span>
+					</li>
+				</ul>
 			</div>
 		</div>
 		<!-- end users list -->
