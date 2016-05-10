@@ -1,0 +1,20 @@
+// elements.scss
+
+// tabs
+ul.tabs{
+	& li{
+		display: inline-block;
+		padding: 5px 15px;
+		margin: 0;
+		background: #111111;
+		color: #a5a5a5;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: .3s;
+
+		&.active{
+			color: #00ff00;
+		}
+	}
+}
+// endtabs

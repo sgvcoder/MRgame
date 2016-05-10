@@ -1,0 +1,40 @@
+// chat.scss
+
+.chat-area{
+	width: 100%;
+	height: 300px;
+	background: #454545;
+	color: #ffffff;
+	overflow-y: scroll;
+
+	& ul{
+		& li{
+			font-size: 12px;
+			padding: 2px 5px;
+
+			& .name{
+				color: #ffff00;
+
+				&::after{
+					content: ': ';
+				}
+			}
+
+			& .msg{
+				color: #fafafa;
+			}
+
+			& .time{
+				float: right;
+				font-style: italic;
+				font-size: 11px;
+				padding-right: 5px;
+				color: #a5a5a5;
+			}
+
+			&:nth-child(2n){
+				background: #353535;
+			}
+		}
+	}
+}
