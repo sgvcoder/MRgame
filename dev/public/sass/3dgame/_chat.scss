@@ -14,6 +14,7 @@
 
 			& .name{
 				color: #ffff00;
+				cursor: pointer;
 
 				&::after{
 					content: ': ';
@@ -56,12 +57,13 @@
 
 	& > input{
 		width: 100%;
-		background: #353535;
 		color: #a5a5a5;
 		border: 1px solid #111111;
 		font-size: 12px;
-		padding: 2px 50px 2px 5px;
+		padding: 7px 50px 5px 5px;
 		transition: .3s;
+		background: linear-gradient(#101010, #111111, #101010);
+		box-shadow: inset 0 0 10px #000000;
 
 		&:active{
 			border: 1px solid #111111;
@@ -77,14 +79,17 @@
 		position: absolute;
 		top: 0;
 		right: 0;
-		background: #111111;
-		padding: 3px 5px;
+		padding: 7px 18px;
 		color: #a5a5a5;
 		font-size: 12px;
 		font-weight: bold;
+		transition: .3s;
+		background: linear-gradient(#444444, #333333);
+		box-shadow: inset 0 0 10px #000000;
 
 		&:hover{
 			text-decoration: none;
+			color: #ffffff;
 		}
 	}
 }

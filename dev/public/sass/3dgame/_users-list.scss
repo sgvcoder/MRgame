@@ -1,8 +1,8 @@
 // users-list.scss
 
 .users-list{
-	height: 323px;
-	padding: 5px 10px;
+	height: 330px;
+	padding: 5px 0 5px 10px;
 
 	& ul{
 		& li{
@@ -16,7 +16,7 @@
 
 			& .name{
 				cursor: pointer;
-				color: #a5a5a5;
+				color: #aaaaaa;
 				transition: .3s;
 
 				&:hover{

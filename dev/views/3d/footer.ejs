@@ -2,6 +2,7 @@
 		<script src="/libs/jquery-1.10.2.min.js"></script>
 		<script src="/libs/bootstrap.min.js"></script>
 		<script src="/libs/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+		<script src="/libs/jquery.contextMenu.min.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 
 		<script>
@@ -10,13 +11,45 @@
 			psocket = io('http://192.168.0.103:9001');
 		socket.emit('findgame', 'true');
 
-		// set wrap height
-		$('#wrap-mrScrollbar').css({
-			height: $(window).height()
-		});
-
 		// scroll init
 		$(".mrScrollbar").mCustomScrollbar();
+
+		// popovers init
+		$('#users-list li .name').popover({
+			placement: 'bottom',
+			title: 'title',
+			content: function(){
+				var content = 'content';
+				return content;
+			},
+			html: true
+		}).on('click', function(e){
+			$('#users-list li .name').not(this).popover('hide');
+		});
+
+		$.contextMenu({
+		    selector: "body",
+		    items: {
+		        foo: {
+		        	name: "Foo",
+		        	callback: function(key, opt){
+		        		alert("Foo!");
+		        	}
+		        }
+		    }
+		    // there's more, have a look at the demos and docs...
+		});
+
+		// set wrap height
+		setWrapHeight();
+		$(window).resize(setWrapHeight);
+
+		function setWrapHeight()
+		{
+			$('#wrap-mrScrollbar').css({
+				height: $(window).height()
+			});
+		}
 		</script>
 
 	</body>
