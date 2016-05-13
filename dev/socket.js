@@ -3,14 +3,19 @@ var game_model = require(__dirname + '/model/game.js'),
 	socket_model = require(__dirname + '/model/socket.js');
 
 module.exports = function(io) {
+
+	// init function loopGameActions
+	game3d_model.loopGameActionsInit(io);
+
 	io.on('connection', function(socket){
 		// save new io session
 		socket_model.connected(io, socket);
 
 		socket.on('disconnect', function(){
 			// socket_model.disconnect(io, socket);
-
-			delete(socketsData[socket.id]);
+			game3d_model.action(io, socket, {
+				action: 'user_disconnect'
+			});
 		});
 
 		socket.on('find_game', function(flag){
@@ -34,9 +39,9 @@ module.exports = function(io) {
 		});
 
 		/**** 3D Game - events ****/
-		socketsData[socket.id] = {
-			status: 'available'
-		};
+		game3d_model.action(io, socket, {
+			action: 'connection'
+		});
 
 		socket.on('get character', function(){
 			game3d_model.getCharacter(io, socket);
@@ -47,104 +52,21 @@ module.exports = function(io) {
 		});
 
 		socket.on('find game', function(data){
-			socket.join('find game 1x1');
-			socket.emit('find game started');
-
-			// set status
-			socketsData[socket.id].status = 'waiting';
-
-			var waitingPlayers = [];
-
-			Object.keys(socketsData).forEach(function(key){
-		        if(typeof socketsData[key] == 'object')
-		        {
-		        	if (io.sockets.connected[key] && socketsData[key].status == 'waiting')
-		        	{
-		        		if(waitingPlayers.length < 2)
-		        		{
-		        			waitingPlayers.push(key);
-		        		}
-					}
-		        }
-		    });
-
-			if(waitingPlayers.length >= 2)
-			{
-			    // send invites
-			    for(var i = 0; i < 2; i++)
-			    {
-			    	socketsData[waitingPlayers[i]].status = 'starting';
-				    io.sockets.connected[waitingPlayers[i]].emit('find game 1x1 - confirm');
-				    console.log('send confirm to ', waitingPlayers[i]);
-			    }
-			}
+			game3d_model.action(io, socket, {
+				action: 'player_start_find_1x1'
+			});
 		});
 
 		socket.on('cancel find game', function(data){
-			// get rooms of socket
-			var rooms = io.sockets.adapter.sids[socket.id];
-
-			Object.keys(rooms).forEach(function(key){
-		        if(key == 'find game 1x1')
-		        {
-		        	// get sockets of room
-					var socketsRoom = io.sockets.adapter.rooms[key].sockets;
-
-					Object.keys(socketsRoom).forEach(function(socketKey){
-						if(typeof socketsData[socketKey] == 'object' && (socketsData[socketKey].status == 'starting' || socketsData[socketKey].status == 'confirmed'))
-						{
-				        	// set status
-							socketsData[socketKey].status = 'available';
-
-							// send notify
-							io.sockets.connected[socketKey].emit('canceled find game');
-						}
-				    });
-		        }
-		    });
+			game3d_model.action(io, socket, {
+				action: 'player_cancel_find_1x1'
+			});
 		});
 
 		socket.on('confirmed find game', function(data){
-			if(socketsData[socket.id].status != 'starting')
-				return false;
-
-			// set status
-			socketsData[socket.id].status = 'confirmed';
-
-			var confirmedPlayers = [];
-
-			Object.keys(socketsData).forEach(function(key){
-		        if(typeof socketsData[key] == 'object')
-		        {
-		        	if (io.sockets.connected[key] && socketsData[key].status == 'confirmed')
-		        	{
-		        		if(confirmedPlayers.length < 2)
-		        		{
-		        			confirmedPlayers.push(key);
-		        		}
-					}
-		        }
-		    });
-
-			if(confirmedPlayers.length >= 2)
-			{
-			    // send invites
-			    for(var i = 0; i < 2; i++)
-			    {
-			    	socketsData[confirmedPlayers[i]].status = 'in game';
-				    io.sockets.connected[confirmedPlayers[i]].emit('redirect', {
-				    	url: '/3dscene'
-				    });
-				    console.log('in game ', confirmedPlayers[i]);
-			    }
-			}
+			game3d_model.action(io, socket, {
+				action: 'player_confirmed_game_1x1'
+			});
 		});
 	});
 }
-
-var socketsData = {};
-
-
-// var interval = setInterval(function(str1, str2) {
-//   console.log(str1 + " " + str2);
-// }, 1000, "Hello.", "How are you?");
