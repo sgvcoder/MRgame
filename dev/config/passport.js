@@ -29,7 +29,7 @@ module.exports = function(passport) {
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-        connection.query("SELECT U.*, C.id AS 'character_id' FROM users AS U LEFT JOIN characters AS C ON C.user_id = U.id WHERE U.id = ?;", [id], function(err, rows){
+        connection.query("SELECT U.*, C.id AS 'character_id' FROM users AS U LEFT JOIN users_to_characters AS C ON C.user_id = U.id WHERE U.id = ?;", [id], function(err, rows){
             if(rows.length == 0 || err)
             {
                 // done(err, rows[0]);
@@ -131,7 +131,7 @@ module.exports = function(passport) {
     );
 
     passport.checkCookie = function(session_id, next) {
-        connection.query("SELECT U.*, C.id AS 'character_id' FROM users AS U LEFT JOIN characters AS C ON C.user_id = U.id WHERE U.session_id = ?;", [session_id], function(err, rows){
+        connection.query("SELECT U.*, C.id AS 'character_id' FROM users AS U LEFT JOIN users_to_characters AS C ON C.user_id = U.id WHERE U.session_id = ?;", [session_id], function(err, rows){
             if (err)
                 return 'Error: err';
             if (!rows.length) {

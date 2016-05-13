@@ -19,8 +19,14 @@ var mysql = require('mysql'),
 var connection = mysql.createConnection(dbconfig.connection);
 connection.query('USE ' + dbconfig.database);
 
-var PlayersData = {};
+var PlayersData = {},
+	PlayersSocketToId = {};
 
+/**
+ * render actions of players. ~28 FPS
+ * @param  {object} io
+ * @return {void}
+ */
 function loopGameActionsInit(io)
 {
 	console.log('\n>>>>> loopGameActionsInit <<<<<\n');
@@ -42,7 +48,7 @@ function action(io, socket, data)
 	switch(data.action)
 	{
 		case 'connection':
-			playerConnection(socket.id);
+			playerConnection(socket);
 			break;
 		case 'user_disconnect':
 			playerDisconnect(socket.id);
@@ -60,16 +66,46 @@ function action(io, socket, data)
 	}
 }
 
-function playerConnection(socket_id)
+function playerConnection(socket)
 {
-	PlayersData[socket_id] = {
-		status: 'available'
-	};
+	var client_cookie,
+		user;
+
+	// get cookie
+	client_cookie = cookie.parse(socket.request.headers.cookie);
+
+	// get user by ssession
+	connection.query("SELECT * FROM users WHERE session_id = ?", [client_cookie['express.id']], function(err, rows){
+	    if(rows.length == 0 || err)
+	    {
+		    error('game3d->playerConnection:error', err, socket);
+		    return;
+	    }
+
+	    user = rows[0];
+
+	    // link socket id to user id
+		PlayersSocketToId[socket.id] = user.id;
+
+		if(typeof PlayersData[user.id] == 'undefined')
+		{
+			console.log('> new user', user.id);
+
+			// create player
+			PlayersData[user.id] = {
+				status: 'available'
+			};
+		}
+	});
 }
 
 function playerDisconnect(socket_id)
 {
-	delete(PlayersData[socket_id]);
+	// remove player info
+	// delete(PlayersData[PlayersSocketToId[socket_id]]);
+
+	// delete socket from link socket to user id
+	delete(PlayersSocketToId[socket_id]);
 }
 
 function playerStartFind_1x1(io, socket)
@@ -78,18 +114,22 @@ function playerStartFind_1x1(io, socket)
 	socket.emit('find game started');
 
 	// set status
-	PlayersData[socket.id].status = 'waiting';
+	PlayersData[PlayersSocketToId[socket.id]].status = 'waiting';
 
-	var waitingPlayers = [];
+	var waitingPlayers = [],
+		socket_id;
 
-	Object.keys(PlayersData).forEach(function(key){
-        if(typeof PlayersData[key] == 'object')
+	Object.keys(PlayersData).forEach(function(user_id){
+
+		socket_id = getSocketIdByUserId(user_id);
+
+        if(typeof PlayersData[user_id] == 'object')
         {
-        	if (io.sockets.connected[key] && PlayersData[key].status == 'waiting')
+        	if (io.sockets.connected[socket_id] && PlayersData[user_id].status == 'waiting')
         	{
         		if(waitingPlayers.length < 2)
         		{
-        			waitingPlayers.push(key);
+        			waitingPlayers.push(socket_id);
         		}
 			}
         }
@@ -100,7 +140,7 @@ function playerStartFind_1x1(io, socket)
 	    // send invites
 	    for(var i = 0; i < 2; i++)
 	    {
-	    	PlayersData[waitingPlayers[i]].status = 'starting';
+	    	PlayersData[PlayersSocketToId[waitingPlayers[i]]].status = 'starting';
 		    io.sockets.connected[waitingPlayers[i]].emit('find game 1x1 - confirm');
 		    console.log('send confirm to ', waitingPlayers[i]);
 	    }
@@ -110,19 +150,23 @@ function playerStartFind_1x1(io, socket)
 function playerCancelFind_1x1(io, socket)
 {
 	// get rooms of socket
-	var rooms = io.sockets.adapter.sids[socket.id];
+	var rooms = io.sockets.adapter.sids[socket.id],
+		socketsRoom,
+		user_id;
 
 	Object.keys(rooms).forEach(function(key){
         if(key == 'find game 1x1')
         {
         	// get sockets of room
-			var socketsRoom = io.sockets.adapter.rooms[key].sockets;
+			socketsRoom = io.sockets.adapter.rooms[key].sockets;
 
 			Object.keys(socketsRoom).forEach(function(socketKey){
-				if(typeof PlayersData[socketKey] == 'object' && (PlayersData[socketKey].status == 'starting' || PlayersData[socketKey].status == 'confirmed'))
+				user_id = PlayersSocketToId[socketKey];
+
+				if(typeof PlayersData[user_id] == 'object' && (PlayersData[user_id].status == 'starting' || PlayersData[user_id].status == 'confirmed'))
 				{
 		        	// set status
-					PlayersData[socketKey].status = 'available';
+					PlayersData[user_id].status = 'available';
 
 					// send notify
 					io.sockets.connected[socketKey].emit('canceled find game');
@@ -134,22 +178,26 @@ function playerCancelFind_1x1(io, socket)
 
 function playerConfirmedGame_1x1(io, socket)
 {
-	if(PlayersData[socket.id].status != 'starting')
+	var user_id = PlayersSocketToId[socket.id],
+		socket_id,
+		confirmedPlayers = [];
+
+	if(PlayersData[user_id].status != 'starting')
 		return false;
 
 	// set status
-	PlayersData[socket.id].status = 'confirmed';
-
-	var confirmedPlayers = [];
+	PlayersData[user_id].status = 'confirmed';
 
 	Object.keys(PlayersData).forEach(function(key){
         if(typeof PlayersData[key] == 'object')
         {
-        	if (io.sockets.connected[key] && PlayersData[key].status == 'confirmed')
+        	socket_id = getSocketIdByUserId(key);
+
+        	if (io.sockets.connected[socket_id] && PlayersData[key].status == 'confirmed')
         	{
         		if(confirmedPlayers.length < 2)
         		{
-        			confirmedPlayers.push(key);
+        			confirmedPlayers.push(socket_id);
         		}
 			}
         }
@@ -160,13 +208,27 @@ function playerConfirmedGame_1x1(io, socket)
 	    // send invites
 	    for(var i = 0; i < 2; i++)
 	    {
-	    	PlayersData[confirmedPlayers[i]].status = 'in game';
+	    	PlayersData[PlayersSocketToId[confirmedPlayers[i]]].status = 'in game';
 		    io.sockets.connected[confirmedPlayers[i]].emit('redirect', {
 		    	url: '/3dscene'
 		    });
 		    console.log('in game ', confirmedPlayers[i]);
 	    }
 	}
+}
+
+function getSocketIdByUserId(user_id)
+{
+	var socket_id = 'undefined';
+
+	Object.keys(PlayersSocketToId).forEach(function(key){
+		if(PlayersSocketToId[key] == user_id)
+		{
+			socket_id = key;
+		}
+	});
+
+	return socket_id;
 }
 
 function getCharacter(io, socket)
@@ -184,7 +246,7 @@ function getCharacter(io, socket)
 	    var user = rows[0],
 	    	user_name = user.username.split('@');
 
-    	connection.query("SELECT C.* FROM characters AS C WHERE C.user_id = ?;", [user.id], function(err, rows){
+    	connection.query("SELECT C.* FROM users_to_characters AS C WHERE C.user_id = ?;", [user.id], function(err, rows){
 		    if(err)
 			    error('game3d->getCharacter:2:error', err, socket);
 
@@ -211,9 +273,9 @@ function createCharacter(io, socket, data)
 	    	return;
 
 		// create room
-	    var query = "INSERT INTO characters (type_id, user_id) VALUES (?, ?);",
-	    	type_id = 1;
-	    connection.query(query,[type_id, rows[0].id], function(err, rows){
+	    var query = "INSERT INTO users_to_characters (character_id, user_id) VALUES (?, ?);",
+	    	character_id = 1;
+	    connection.query(query,[character_id, rows[0].id], function(err, rows){
 	    	if(err)
 	    	{
 		    	error('game3d->createCharacter:2:error', err, socket);
