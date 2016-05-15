@@ -1,5 +1,7 @@
 $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
+	$('body').tooltip({
+		selector: '[data-toggle="tooltip"]'
+	});
 })
 
 socket.on('reload page', function(){
@@ -12,3 +14,8 @@ $('#createCharacter').off('click').click(function(e){
 	};
 	socket.emit('create character', data);
 });
+
+function _(str)
+{
+	return str;
+}

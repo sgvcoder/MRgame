@@ -19,15 +19,39 @@ ul{
 
 .btn{
 	&.btn-dark{
-		background: #0A0A0A;
-		color: #ffffff;
+		color: #a9a9a9;
+		background: linear-gradient(#454545, #353535);
 		text-transform: uppercase;
 		transition: .5s;
 		border: 1px solid #000000;
 		@include box-shadow(0 0 5px #000000);
 
 		&:hover{
-			background: #4A0000;
+			color: #ffffff;
+			background: linear-gradient(#454545, #353535);
+		}
+
+		&:active{
+			color: #ffffff;
+			background: linear-gradient(#353535, #252525);
+		}
+
+		&.btn-dark-red{
+			&:hover{
+				color: #ff0000;
+			}
+		}
+
+		&.btn-dark-green{
+			&:hover{
+				color: #00ff00;
+			}
+		}
+
+		&.btn-dark-blue{
+			&:hover{
+				color: #0000ff;
+			}
 		}
 	}
 }
@@ -288,6 +312,7 @@ nav.navbar{
 		& li{
 		    border-bottom: 1px solid #3C3C3C;
 		 	margin-bottom: 2px;
+	 		text-transform: capitalize;
 
 		 	& span:last-child{
 				float: right;

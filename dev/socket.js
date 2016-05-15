@@ -3,10 +3,6 @@ var game_model = require(__dirname + '/model/game.js'),
 	socket_model = require(__dirname + '/model/socket.js');
 
 module.exports = function(io) {
-
-	// init function loopGameActions
-	game3d_model.loopGameActionsInit(io);
-
 	io.on('connection', function(socket){
 		// save new io session
 		socket_model.connected(io, socket);
@@ -44,7 +40,7 @@ module.exports = function(io) {
 		});
 
 		socket.on('get character', function(){
-			game3d_model.getCharacter(io, socket);
+			game3d_model.getCharacter(socket);
 		});
 
 		socket.on('create character', function(data){
@@ -66,6 +62,26 @@ module.exports = function(io) {
 		socket.on('confirmed find game', function(data){
 			game3d_model.action(io, socket, {
 				action: 'player_confirmed_game_1x1'
+			});
+		});
+
+		socket.on('get skills tree', function(){
+			game3d_model.action(io, socket, {
+				action: 'skills_load_tree_for_player'
+			});
+		});
+
+		socket.on('skills change status', function(data){
+			game3d_model.action(io, socket, {
+				action: 'skills_change_status_for_player',
+				data: data
+			});
+		});
+
+		socket.on('skills save', function(data){
+			game3d_model.action(io, socket, {
+				action: 'skills_apply_for_player',
+				activeSkills: data.activeSkills
 			});
 		});
 	});

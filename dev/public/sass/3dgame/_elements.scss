@@ -59,3 +59,87 @@ ul.tabs{
 	}
 }
 // end tabs
+
+// modal
+.modal-dark{
+	& .modal-content{
+		background: #444444;
+		color: #DCDCDC;
+
+		& .modal-header{
+			border-bottom: 1px solid #000000;
+
+			& .close{
+				color: #ffffff;
+			    text-shadow: 0 1px 0 #000000;
+			    opacity: .5;
+
+				& span{
+					color: #ffffff;
+				}
+			}
+		}
+
+		& .modal-body{
+			&.loding{
+				background: url('/images/loading.gif') no-repeat center center #000000;
+				min-height: 200px;
+			}
+		}
+
+		& .modal-footer{
+			border-top: 1px solid #000000;
+		}
+	}
+
+	& .modal-footer-nav{
+		display: inline-block;
+	}
+}
+// end modal
+
+// skills tree modal
+.st-content{
+	vertical-align: top;
+	display: table;
+	width: 100%;
+
+	& .st-branch{
+		display: table-cell;
+		width: 33%;
+
+		& .skill-box{
+			&.available{
+				opacity: .5;
+			}
+
+			&.not-available{
+				filter: grayscale(100%);
+			}
+
+			&.active{
+				opacity: 1;
+			    box-shadow: 0 0 5px #ffffff;
+			}
+
+			&:hover{
+				opacity: 1;
+				box-shadow: 0 0 5px #ff00ff;
+			}
+		}
+
+		& .st-branch-name{
+			text-transform: uppercase;
+			display: block;
+			margin-bottom: 10px;
+		}
+
+		& .st-branch-skills{
+			& li{
+				display: inline-block;
+				margin: 0 10px 10px 0;
+			}
+		}
+	}
+}
+// end skills tree modal
