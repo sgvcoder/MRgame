@@ -132,7 +132,6 @@ function action(io, socket, data)
 function playerInit(socket)
 {
 	var client_cookie,
-		user,
 		sql;
 
 	// get cookie
@@ -151,9 +150,19 @@ function playerInit(socket)
 	connection.query(sql, [client_cookie['express.id']], function(err, rows){
 	    if(rows.length == 0 || err)
 	    {
-		    error('game3d->playerInit:getUserСharacter', err, socket);
+		    error('game3d->playerInit', err, socket);
 		    return;
 	    }
+
+	    // create player
+		PlayersData[rows[0].user_id] = {
+			status: 'available',
+			character: rows[0],
+			maxActiveSkills: 3
+		};
+
+	    // link socket id to user id
+		PlayersSocketToId[socket.id] = rows[0].user_id;
 
 	    // skills init
 	    playerSkillsInit(socket, rows[0]);
@@ -173,36 +182,30 @@ function playerSkillsInit(socket, user, isUpdate)
 	connection.query(sql, [user.user_id], function(err, rows){
 	    if(err)
 	    {
-		    error('game3d->playerInit:getSkills', err, socket);
+		    error('game3d->playerSkillsInit', err, socket);
 		    return;
 	    }
 
-	    // link socket id to user id
-		PlayersSocketToId[socket.id] = user.user_id;
-
-		if(typeof PlayersData[user.user_id] == 'undefined' || isUpdate == true)
+		// add new skill to user object
+		PlayersData[user.user_id].skills = [];
+		for (var i = 0; i < rows.length; i++)
 		{
-			// create player
-			PlayersData[user.user_id] = {
-				status: 'available',
-				character: user,
-				skills: []
-			};
+			PlayersData[user.user_id].skills.push(rows[i]);
+		}
 
-			for (var i = 0; i < rows.length; i++)
-			{
-				PlayersData[user.user_id].skills.push(rows[i]);
-			}
+		if(isUpdate == true)
+		{
+			console.log('> upgrade skills of user', user.user_id);
 
-			if(isUpdate == true)
-			{
-				console.log('> upgrade skills of user', user.user_id);
-				getCharacter(socket);
-			}
-			else
-			{
-				console.log('> new user', user.user_id);
-			}
+			// update user interface
+			getCharacter(socket);
+		}
+		else
+		{
+			console.log('> new user', user.user_id);
+
+			// send notify
+			socket.emit('player ready');
 		}
 
 	});
@@ -348,6 +351,9 @@ function skillsLoadTreeForPlayer(socket)
 	// clone skills tree
 	var users_skills_tree = (JSON.parse(JSON.stringify(skills_tree)));
 
+	// set count activated
+	users_skills_tree.countActivated = 0;
+
 	if(user_active_skils.length > 0)
 	{
 		// modify tree for user
@@ -364,6 +370,7 @@ function skillsLoadTreeForPlayer(socket)
 					if(user_active_skils[us].id == users_skills_tree.branches[b].skills[s].id)
 					{
 						users_skills_tree.branches[b].skills[s].statusClass += ' active';
+						users_skills_tree.countActivated++;
 					}
 				}
 			}
@@ -378,7 +385,6 @@ function skillsLoadTreeForPlayer(socket)
 
 function skillsChangeStatusForPlayer(socket, data)
 {
-
 	if(data.status == 'enabled')
 	{
 		socket.emit('skills new status', {
@@ -386,6 +392,7 @@ function skillsChangeStatusForPlayer(socket, data)
 			status: 'enabled'
 		});
 	}
+
 	if(data.status == 'disabled')
 	{
 		socket.emit('skills new status', {
@@ -413,8 +420,11 @@ function skillsApplyForPlayer(socket, activeSkills)
 	    	// link skill to user
 	    	for (var i = 0; i < activeSkills.length; i++)
 	    	{
-	    		sql = 'INSERT INTO skills_to_users (`user_id`, `skill_id`) VALUES (?, ?)';
-	    		connection.query(sql, [user_id, activeSkills[i]]);
+	    		if(i < PlayersData[PlayersSocketToId[socket.id]].maxActiveSkills)
+	    		{
+		    		sql = 'INSERT INTO skills_to_users (`user_id`, `skill_id`) VALUES (?, ?)';
+		    		connection.query(sql, [user_id, activeSkills[i]]);
+	    		}
 	    	}
 	    }
 

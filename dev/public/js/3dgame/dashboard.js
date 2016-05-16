@@ -4,7 +4,10 @@ var user = null;
 // socket events
 /////////////////////////////////
 
-socket.emit('get character');
+socket.on('player ready', function(){
+	socket.emit('get character');
+});
+
 socket.on('character info', function(data){
 	user = data;
 	playerShowStatistics();
@@ -54,6 +57,9 @@ socket.on('skills new status', function(data){
 	{
 		$('.st-content [data-skill-id="' + data.skill_id + '"]').removeClass('active');
 	}
+
+	// update counter
+	$('#st-count-activated').text($('#st-content .skill-box.active').length);
 });
 
 /////////////////////////////////
@@ -121,7 +127,8 @@ function modalShowSkillsTree(tree)
 {
 	var el = $('#modal'),
 		content = $('<div class="st-content" id="st-content"></div>'),
-		btn_save = '<button type="button" class="btn btn-dark btn-dark-green" id="skills-tree-apply">apply</button>';
+		btn_save = '<button type="button" class="btn btn-dark btn-dark-green" id="skills-tree-apply">apply</button>',
+		info_block = '<div class="st-skills-max-active">selected: <b><span id="st-count-activated">' + tree.countActivated + '</span>/' + user.maxActiveSkills + '</b></div>';
 
 	// set content
 	for (var b = 0; b < tree.branches.length; b++)
@@ -140,10 +147,15 @@ function modalShowSkillsTree(tree)
 
 		content.append(branch);
 	}
-	el.find('.modal-body').html(content).removeClass('loding');
+	el.find('.modal-body')
+		.html('')
+		.append(info_block)
+		.append(content)
+		.removeClass('loding');
 
 	// buttons
-	el.find('.modal-footer-nav').html(btn_save);
+	el.find('.modal-footer-nav')
+		.html(btn_save);
 
 	// mouse init
 	$('#st-content .skill-box').off('click').click(function(e){
@@ -157,7 +169,7 @@ function modalShowSkillsTree(tree)
 				status: 'disabled'
 			});
 		}
-		else if($(this).hasClass('available'))
+		else if($(this).hasClass('available') && $('#st-content .skill-box.active').length < user.maxActiveSkills)
 		{
 			// enable
 			socket.emit('skills change status', {
