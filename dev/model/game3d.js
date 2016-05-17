@@ -159,7 +159,7 @@ function playerInit(socket)
 			status: 'available',
 			character: rows[0],
 			maxActiveSkills: 3,
-			name: 'player',
+			name: socket.id,
 		    startPosition: {x: 0, y: 0, z: 0},
 		    moveSpeed: 200
 		};
