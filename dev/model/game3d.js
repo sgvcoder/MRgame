@@ -4,8 +4,9 @@
 module.exports = {
 	getCharacter: getCharacter,
 	createCharacter: createCharacter,
-	loopGameActionsInit: loopGameActionsInit,
-	action: action
+	action: action,
+	getPlayers: getPlayers,
+	getPlayerBySocketId: getPlayerBySocketId
 };
 
 // load up the game model
@@ -25,22 +26,21 @@ var PlayersData = {},
 		branches: []
 	};
 
+function getPlayers()
+{
+	return {
+		PlayersData: PlayersData,
+		PlayersSocketToId: PlayersSocketToId
+	};
+}
+
+function getPlayerBySocketId(socket_id)
+{
+	return PlayersData[PlayersSocketToId[socket_id]];
+}
+
 // load all skills info
 loadSkillsTree();
-
-/**
- * render actions of players. ~28 FPS
- * @param  {object} io
- * @return {void}
- */
-function loopGameActionsInit(io)
-{
-	console.log('\n>>>>> loopGameActionsInit <<<<<\n');
-
-	var loopGameActions = setInterval(function() {
-
-	}, 35);
-}
 
 function loadSkillsTree()
 {
@@ -158,7 +158,10 @@ function playerInit(socket)
 		PlayersData[rows[0].user_id] = {
 			status: 'available',
 			character: rows[0],
-			maxActiveSkills: 3
+			maxActiveSkills: 3,
+			name: 'player',
+		    startPosition: {x: 0, y: 0, z: 0},
+		    moveSpeed: 200
 		};
 
 	    // link socket id to user id

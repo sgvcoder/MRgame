@@ -1,0 +1,33 @@
+<!-- views/3d/header.ejs -->
+<% include ./header.ejs %>
+
+<div id="frame"></div>
+
+<!-- interface -->
+<div id="panel" class="panel">
+    <ul id="skills"></ul>
+</div>
+
+<!-- views/3d/footer.ejs -->
+<% include ./footer.ejs %>
+
+<!-- load libs -->
+<script src="/libs/three/build/three.min.js"></script>
+<script src="/libs/three/controls/OBJMTLLoader.js"></script>
+<script src="/libs/three/controls/OBJLoader.js"></script>
+<script src="/libs/three/controls/Detector.js"></script>
+<script src="/libs/three/controls/OrbitControls.js"></script>
+<script src="/libs/three/controls/Projector.js"></script>
+<script src="/libs/three/controls/Stats.js"></script>
+<script src="/libs/three/controls/THREEx.FullScreen.js"></script>
+<script src="/libs/three/controls/THREEx.KeyboardState.js"></script>
+<script src="/libs/three/controls/THREEx.WindowResize.js"></script>
+<script src="/libs/three/controls/GPUParticleSystem.js"></script>
+<script src="/libs/three/controls/MMDLoader.js"></script>
+<script src="/libs/three/controls/Tween.js"></script>
+<script src="/libs/AStarFinder/astar.js"></script>
+<script src="/libs/dat.gui.min.js"></script>
+
+<!-- load base scripts -->
+<script src="/js/3dgame/index.js"></script>
+<script src="/js/3dgame/map.js"></script>

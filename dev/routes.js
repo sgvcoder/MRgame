@@ -135,10 +135,9 @@ module.exports = function(app, passport) {
     // 3D scene
     // =====================================
     app.get('/3dscene', function(req, res) {
-        res.render('3d/index.ejs', {
+        res.render('3d/map.ejs', {
             title: '3D Scene',
-            descriptions: '3D Scene descriptions',
-            map: require(__dirname + '/maps/demo.js')
+            descriptions: '3D Scene descriptions'
         });
     });
 };

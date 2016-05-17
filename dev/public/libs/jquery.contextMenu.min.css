@@ -1,6 +1,10 @@
 @charset "UTF-8";
 @font-face{font-family:context-menu-icons;font-style:normal;font-weight:400;src:url(font/context-menu-icons.eot?ilzz);src:url(font/context-menu-icons.eot?ilzz#iefix) format("embedded-opentype"),url(font/context-menu-icons.woff2?ilzz) format("woff2"),url(font/context-menu-icons.woff?ilzz) format("woff"),url(font/context-menu-icons.ttf?ilzz) format("truetype")}.context-menu-icon:before{position:absolute;top:50%;left:0;width:2em;font-family:context-menu-icons;font-size:1em;font-style:normal;font-weight:400;line-height:1;color:#2980b9;text-align:center;-webkit-transform:translateY(-50%);-ms-transform:translateY(-50%);-o-transform:translateY(-50%);transform:translateY(-50%);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.context-menu-icon-add:before{content:"\EA01"}.context-menu-icon-copy:before{content:"\EA02"}.context-menu-icon-cut:before{content:"\EA03"}.context-menu-icon-delete:before{content:"\EA04"}.context-menu-icon-edit:before{content:"\EA05"}.context-menu-icon-paste:before{content:"\EA06"}.context-menu-icon-quit:before{content:"\EA07"}.context-menu-icon.context-menu-hover:before{color:#fff}.context-menu-icon.context-menu-disabled::before{color:#bbb}
+#context-menu-layer{
+	z-index: 9998 !important;
+}
 .context-menu-list{
+	z-index: 9999 !important;
 	position:absolute;
 	display:inline-block;
 	min-width:13em;

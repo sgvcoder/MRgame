@@ -3,6 +3,7 @@
 @import '3dgame/elements';
 @import '3dgame/chat';
 @import '3dgame/users-list';
+@import '3dgame/game-interface';
 
 body{
 	color: #ffffff;
@@ -51,6 +52,15 @@ ul{
 		&.btn-dark-blue{
 			&:hover{
 				color: #0000ff;
+			}
+		}
+
+		&.loading{
+			color: #ffffff;
+			background: linear-gradient(#EC0100, #D20000);
+
+			&:hover{
+				color: #ffffff;
 			}
 		}
 	}

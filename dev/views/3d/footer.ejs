@@ -30,9 +30,6 @@
 			psocket = io('http://192.168.0.103:9001');
 		socket.emit('findgame', 'true');
 
-		// scroll init
-		$(".mrScrollbar").mCustomScrollbar();
-
 		// popovers init
 		$('#users-list li .name').popover({
 			placement: 'bottom',
@@ -46,18 +43,6 @@
 			$('#users-list li .name').not(this).popover('hide');
 		});
 
-		$.contextMenu({
-		    selector: "body",
-		    items: {
-		        foo: {
-		        	name: "Foo",
-		        	callback: function(key, opt){
-		        		alert("Foo!");
-		        	}
-		        }
-		    }
-		});
-
 		// set wrap height
 		setWrapHeight();
 		$(window).resize(setWrapHeight);
@@ -66,6 +51,27 @@
 		{
 			$('#wrap-mrScrollbar').css({
 				height: $(window).height()
+			});
+		}
+
+		function ScrollbarInit()
+		{
+			// scroll init
+			$(".mrScrollbar").mCustomScrollbar();
+		}
+
+		function contextMenuInit()
+		{
+			$.contextMenu({
+			    selector: "body",
+			    items: {
+			        foo: {
+			        	name: "Foo",
+			        	callback: function(key, opt){
+			        		alert("Foo!");
+			        	}
+			        }
+			    }
 			});
 		}
 		</script>

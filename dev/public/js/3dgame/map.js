@@ -1,214 +1,3 @@
-<%- script('/libs/jquery-1.10.2.min.js') %>
-<%- script('/libs/three/build/three.min.js') %>
-<%- script('/libs/three/controls/OBJMTLLoader.js') %>
-<%- script('/libs/three/controls/OBJLoader.js') %>
-<%- script('/libs/three/controls/Detector.js') %>
-<%- script('/libs/three/controls/OrbitControls.js') %>
-<%- script('/libs/three/controls/Projector.js') %>
-<%- script('/libs/three/controls/Stats.js') %>
-<%- script('/libs/three/controls/THREEx.FullScreen.js') %>
-<%- script('/libs/three/controls/THREEx.KeyboardState.js') %>
-<%- script('/libs/three/controls/THREEx.WindowResize.js') %>
-<%- script('/libs/three/controls/GPUParticleSystem.js') %>
-<%- script('/libs/three/controls/MMDLoader.js') %>
-<%- script('/libs/three/controls/Tween.js') %>
-<%- script('/libs/AStarFinder/astar.js') %>
-<%- script('/libs/dat.gui.min.js') %>
-<%- script('/socket.io/socket.io.js') %>
-
-<style>
-    body {margin: 0;}
-    canvas {width: 100%; height: 100%; position: relative; overflow: hidden;}
-
-    .panel{
-        position: fixed;
-        bottom: 0;
-        left: 10%;
-        background: rgba(0, 0, 0, .5);
-        padding: 10px 5px;
-        margin: 0;
-        border-radius: 10px 10px 0 0;
-    }
-
-    .panel ul{
-        margin: 0;
-        padding: 0;
-    }
-
-    .panel li img{
-        opacity: .5;
-    }
-
-    .panel li.hover:hover img,
-    .panel li.hover img{
-        opacity: 1;
-    }
-
-    .panel:hover li.hover img{
-        opacity: .8;
-    }
-
-    .panel li{
-        position: relative;
-        display: inline-block;
-        width: 48px;
-        height: 47px;
-        cursor: pointer;
-    }
-
-    .panel li img{
-        width: 48px;
-        height: 47px;
-    }
-
-    .panel li span{
-        text-align: center;
-        font-size: 28px;
-        width: 100%;
-        text-shadow: 0 0 10px #000000;
-        position: absolute;
-        top: 8px;
-        left: 0;
-        display: none;
-    }
-
-    .panel li.cooldown span{
-        display: block;
-    }
-
-    .panel li.hover:hover svg,
-    .panel li.hover.active svg{
-        box-shadow: 0 0 10px #FFA200;
-    }
-
-    .panel li.hover:hover img,
-    .panel li.hover.active img{
-        opacity: 1;
-    }
-
-    .panel ul li {
-        position: relative;
-        margin: 0 10px;
-        background: rgba(0,0,0,0);
-        color: #fff;
-        box-shadow: none;
-        -webkit-transition: background 0.3s;
-        transition: background 0.3s;
-        box-shadow: 0 0 5px #000000;
-    }
-
-    .panel ul li.hover:hover,
-    .panel ul li.hover.active{
-        background: rgba(255,255,255,0);
-        -webkit-transition-delay: 0s;
-        transition-delay: 0s;
-    }
-
-    .panel ul li svg{
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    .panel ul li svg line{
-        stroke-width: 1;
-        stroke: #ecf0f1;
-        fill: none;
-        -webkit-transition: all .8s ease-in-out;
-        transition: all .8s ease-in-out;
-    }
-
-    .panel ul li.hover:hover svg line,
-    .panel ul li.hover.active svg line{
-        stroke: #FFA200;
-        -webkit-transition-delay: 0.1s;
-        transition-delay: 0.1s;
-        background: rgba(0,0,0,0.4);
-    }
-
-    .panel ul li svg line.top,
-    .panel ul li svg line.bottom{
-        stroke-dasharray: 63 16;
-    }
-
-    .panel ul li svg line.left,
-    .panel ul li svg line.right{
-        stroke-dasharray: 63 16;
-    }
-
-    .panel ul li.hover:hover svg line.top,
-    .panel ul li.hover.active svg line.top{
-        -webkit-transform: translateX(-48px);
-        transform: translateX(-48px);
-    }
-
-    .panel ul li.hover:hover svg line.bottom,
-    .panel ul li.hover.active svg line.bottom{
-        -webkit-transform: translateX(48px);
-        transform: translateX(48px);
-    }
-
-    .panel ul li.hover:hover svg line.left,
-    .panel ul li.hover.active svg line.left{
-        -webkit-transform: translateY(47px);
-        transform: translateY(47px);
-    }
-
-    .panel ul li.hover:hover svg line.right,
-    .panel ul li.hover.active svg line.right{
-        -webkit-transform: translateY(-47px);
-        transform: translateY(-47px);
-    }
-
-    .panel ul li svg line{
-        -webkit-transition: all .5s;
-        transition: all .5s;
-    }
-
-    .panel ul li.hover:hover svg line,
-    .panel ul li.hover.active svg line{
-        stroke-width: 4;
-        -webkit-transition-delay: 0s;
-        transition-delay: 0s;
-    }
-
-    body{
-        overflow: hidden;
-    }
-
-    #jsThree{
-        overflow: hidden;
-    }
-
-    .objectTitle{
-        position: absolute;
-        color: #00EF2A;
-        width: 100px;
-        height: 18px;
-        font-size: 12px;
-        text-align: center;
-        margin: -80px 0 0 -50px;
-        padding: 0;
-        background: rgba(0, 0, 0, .5);
-        box-sizing: border-box;
-        box-shadow: 0 0 10px #000000;
-        border: 1px solid #000000;
-        border-radius: 5px;
-        overflow: hidden;
-        cursor: default;
-    }
-
-    .health{
-        background: #00EF2A;
-        display: block;
-        height: 2px;
-        margin: 0 auto;
-    }
-</style>
-<div id="jsThree"></div>
-
-<script>
-
 // base global variables
 var scene = new THREE.Scene(),
     clock = new THREE.Clock(),
@@ -220,14 +9,12 @@ var scene = new THREE.Scene(),
     camera,
     cameraTarget,
     cameraPosition,
-    container = document.getElementById("jsThree"),
+    container = document.getElementById("frame"),
     controls,
     renderer,
     isScreenMove = false,
     stats,
     loaderObjectFromJS = new THREE.JSONLoader();
-
-var socket = io('192.168.0.103:9001');
 
 // custom global variables
 var OBJLoader,
@@ -236,76 +23,10 @@ var OBJLoader,
     sceneCollisionObjects = [];
 
 // base config
-var config = {
-    debug: {
-        enabled: true
-    },
-    window: {
-        width: window.innerWidth,
-        height: window.innerHeight
-    },
-    scene: {
-        fog: {
-            enabled: false
-        }
-    },
-    camera: {
-        angle: 45,
-        aspect: window.innerWidth / window.innerHeight,
-        near: 0.1,
-        far: 1000,
-        startX: 0,
-        startY: 50,
-        startZ: 100,
-        controls: {
-            enabled: true,
-            minDistance: -190,
-            maxDistance: -10,
-            minPolarAngle: Math.PI / 6,
-            maxPolarAngle: Math.PI / 1.2,
-            noKeys: true,
-            noPan: true,
-            noRotate: false,
-            moveSpeed: 10,
-            screenPadding: 0.95,
-            worldSizeCube: 1165
-        }
-    },
-    map: {
-        cols: 0,
-        rows: 0,
-        matrix: <%- JSON.stringify(map) %>,
-        showGrid: false
-    },
-    floor: {
-        width: 3000,
-        length: 3000,
-        position: {
-            y: -250
-        }
-    },
-    light: {
-        castShadow: true,
-        frameCastShadow: false,
-        power: 1500
-    },
-    sound: {
-        maxDistance: 500
-    },
-    keyboard: {
-    }
-};
+var config = {},
+	audioFiles = {},
+	player = {};
 
-// player
-var player = {
-    name: 'player',
-    startPosition: {
-        x: 0,
-        y: 0,
-        z: 0
-    },
-    moveSpeed: 200
-};
 var opponents = {};
 var particleSystems = [];
 var sounds = {};
@@ -345,22 +66,240 @@ var skills = {
     }
 };
 
-var audioFiles = {
-    skills: {
-        particle: {
-            start: 'sounds/effects/fishing_polecastLine_01.wav',
-            collision: 'sounds/effects/clap_1.wav'
+function startAppInit()
+{
+	socket.emit('get map data');
+}
+
+// -------------------------------------------------------------------------------------
+// - socket ----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
+socket.on('map data', function(data){
+	// init configs files
+	config = data.config;
+	audioFiles = data.audioFiles;
+	player = data.player;
+
+	// init window data
+	config.window = {
+        width: window.innerWidth,
+        height: window.innerHeight
+    };
+    config.camera.aspect = window.innerWidth / window.innerHeight;
+
+	// start app
+	init();
+
+    // init interface
+    interface_init();
+
+	// inputs init
+	inputDevicesInit();
+});
+
+socket.on('send position', function(data){
+    if('/#' + socket.id == data.id)
+    {
+        return;
+    };
+
+    if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
+    {
+        if(opponents[data.id] != 'loading')
+        {
+            opponents[data.id] = 'loading';
+            add_player(data.id);
         }
-    },
-    move: 'sounds/effects/grass_walk_02.wav',
-    music: [
-        ''
-    ]
-};
+    }
+    else if(data.action)
+    {
+        if(data.action == 'stay')
+        {
+            objectAnimationStay(opponents[data.id], false);
+        }
+        else if(data.action == 'move')
+        {
+            if(opponents[data.id].action.status != 'move')
+            {
+                objectAnimationMove(opponents[data.id], false);
+            }
+            objectRotateTo(opponents[data.id], data.position.x, data.position.z);
+        }
 
-// start app
-init();
+        opponents[data.id].position.x = data.position.x;
+        opponents[data.id].position.z = data.position.z;
+    }
+});
 
+socket.on('use skill', function(data){
+    if('/#' + socket.id == data.id || typeof opponents[data.id] === 'undefined')
+    {
+        return;
+    };
+
+    console.log('use skill', data.id);
+    useSkill(opponents[data.id], data.targetPosition, false);
+});
+
+socket.on('opponent disconnected', function(id){
+    console.log('player id: ' + id + ' disconnected');
+    if(typeof opponents[id] !== 'undefined')
+    {
+        var parent = document.getElementById('frame');
+        var el = document.getElementById(opponents[id].uuid);
+        parent.removeChild(el);
+
+        scene.remove(opponents[id]);
+        opponents[id] = null;
+        animate();
+    }
+});
+
+
+
+
+
+
+// -------------------------------------------------------------------------------------
+// - interface -------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
+function interface_init()
+{
+	// create panel of skills
+	interfaceCreateSkillsPanel();
+
+    $('#panel').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // select skill
+    $('#panel li').click(function(e) {
+        if($(this).hasClass('cooldown') == false)
+        {
+            $('#panel li').removeClass('active');
+            $(this).addClass('active');
+        }
+    });
+
+    // stop events for used skills
+    $('#panel li.used').on('mouseover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+}
+
+function interfaceCreateSkillsPanel()
+{
+	for (var i = 0; i < player.skills.length; i++)
+	{
+		$('#panel #skills').append('<li class="hover" id="particle"><img src="/images/skills/' + player.skills[i].image + '"><span></span><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><line class="top" x1="0" y1="0" x2="900" y2="0"/><line class="left" x1="0" y1="47" x2="0" y2="-920"/><line class="bottom" x1="48" y1="47" x2="-600" y2="47"/><line class="right" x1="48" y1="0" x2="48" y2="1380"/></li>');
+		player.skills[i]
+	}
+}
+
+function interfaceUseSkill(skill)
+{
+    $('#' + skill).removeClass('active');
+
+    if(skills[skill].cooldown > 0)
+    {
+        $('#' + skill)
+            .removeClass('hover')
+            .addClass('cooldown');
+
+        var s = parseInt(skills[skill].cooldown / 1000);
+        for(var i = s; i >= 0; i--)
+        {
+            setTimeout("interfaceSetSkillCooldown('particle', " + (s - i) + ")", i * 1000);
+        }
+
+        // call cooldown
+        setTimeout("interfaceSkillReloaded('particle')", skills[skill].cooldown);
+    }
+}
+
+function interfaceSkillReloaded(skill)
+{
+    $('#' + skill)
+        .addClass('hover')
+        .removeClass('cooldown');
+}
+
+function interfaceSetSkillCooldown(skill, cooldown)
+{
+    $('#' + skill + ' span').text(cooldown);
+}
+
+function interfaceShowObjectTitle(id, title, x, y)
+{
+    var tooltip = document.getElementById(id);
+    if(tooltip)
+    {
+        tooltip.style.left = x;
+        tooltip.style.top = y;
+    }
+    else
+    {
+        var parent = document.getElementById('frame');
+        var el = document.createElement("div");
+        el.className += ' objectTitle';
+        el.setAttribute("id", id);
+        parent.appendChild(el);
+
+        var textPlace = document.createElement("span");
+        textPlace.innerHTML = title.substring(0, 12);
+        el.appendChild(textPlace);
+
+        var healthPlace = document.createElement("span");
+        healthPlace.className += ' health';
+        healthPlace.style.width = '100%';
+        el.appendChild(healthPlace);
+    }
+}
+
+function interfaceSetHealth(id, percent)
+{
+    var el = document.getElementById(id);
+    if(el)
+    {
+        el.getElementsByClassName('health')[0].style.width = percent + '%';
+    }
+}
+
+
+
+
+
+
+/////////////////////////////////
+// mouse events
+/////////////////////////////////
+
+$(document).ready(function(){
+    // start load data of map
+    startAppInit();
+});
+
+function inputDevicesInit()
+{
+	$(document).on('mousedown', function(e) {
+	    onDocumentMouseDown(e);
+	});
+
+	$(document).on('mousemove', function(e) {
+	    onMouseMove(e);
+	});
+
+	document.addEventListener('mousewheel', onMouseWheel, false);
+	window.addEventListener('resize', onWindowResize, false);
+}
+
+
+
+/////////////////////////////////
+// functions
+/////////////////////////////////
 function init ()
 {
     // create render element and render mode
@@ -389,7 +328,7 @@ function init ()
         renderer.setClearColor(scene.fog.color);
     }
 
-    $('#jsThree').append(renderer.domElement);
+    $('#frame').append(renderer.domElement);
 
     // events
     THREEx.WindowResize(renderer, camera);
@@ -723,7 +662,7 @@ function show_statistics()
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.top = '10%';
     stats.domElement.style.zIndex = 100;
-    $('#jsThree').append(stats.domElement);
+    $('#frame').append(stats.domElement);
 }
 
 function render()
@@ -1557,235 +1496,4 @@ function onWindowResize(e)
 
 function onWindowKeyPress (event)
 {
-    /*var z1 = Math.floor(camera.position.z);
-    var z2 = Math.floor(orc.position.z);
-
-    if (z1 > z2 && keyboard.pressed("W")) {
-        orc.rotation.y = camera.rotation.y;
-    }
-    if (z1 <= z2 && keyboard.pressed("W")) {
-        orc.rotation.y = Math.PI - camera.rotation.y;
-    }
-    if (z1 > z2 && keyboard.pressed("S")) {
-        orc.rotation.y = camera.rotation.y + Math.PI;
-    }
-    if (z1 <= z2 && keyboard.pressed("S")) {
-        orc.rotation.y = -camera.rotation.y;
-    }
-    if (z1 > z2 && keyboard.pressed("A")) {
-        orc.rotation.y = camera.rotation.y + Math.PI / 2;
-    }
-    if (z1 > z2 && keyboard.pressed("D")) {
-        orc.rotation.y = camera.rotation.y - Math.PI / 2;
-    }
-    if (z1 <= z2 && keyboard.pressed("A")) {
-        orc.rotation.y = Math.PI - camera.rotation.y + Math.PI / 2;
-    }
-    if (z1 <= z2 && keyboard.pressed("D")) {
-        orc.rotation.y = Math.PI - camera.rotation.y - Math.PI / 2;
-    }
-
-    playerWire.rotation.x = orc.rotation.x;
-    playerWire.rotation.y = orc.rotation.y;
-    playerWire.rotation.z = orc.rotation.z;
-
-    if (!checkContact(0, 0, -15))
-        return;
-    orc.translateZ(-moveDistance);
-
-    physics();
-    checkCamera();*/
-
 }
-
-// -------------------------------------------------------------------------------------
-// - socket ----------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
-socket.on('send position', function(data){
-    if('/#' + socket.id == data.id)
-    {
-        return;
-    };
-
-    if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
-    {
-        if(opponents[data.id] != 'loading')
-        {
-            opponents[data.id] = 'loading';
-            add_player(data.id);
-        }
-    }
-    else if(data.action)
-    {
-        if(data.action == 'stay')
-        {
-            objectAnimationStay(opponents[data.id], false);
-        }
-        else if(data.action == 'move')
-        {
-            if(opponents[data.id].action.status != 'move')
-            {
-                objectAnimationMove(opponents[data.id], false);
-            }
-            objectRotateTo(opponents[data.id], data.position.x, data.position.z);
-        }
-
-        opponents[data.id].position.x = data.position.x;
-        opponents[data.id].position.z = data.position.z;
-    }
-});
-
-socket.on('use skill', function(data){
-    if('/#' + socket.id == data.id || typeof opponents[data.id] === 'undefined')
-    {
-        return;
-    };
-
-    console.log('use skill', data.id);
-    useSkill(opponents[data.id], data.targetPosition, false);
-});
-
-socket.on('opponent disconnected', function(id){
-    console.log('player id: ' + id + ' disconnected');
-    if(typeof opponents[id] !== 'undefined')
-    {
-        var parent = document.getElementById('jsThree');
-        var el = document.getElementById(opponents[id].uuid);
-        parent.removeChild(el);
-
-        scene.remove(opponents[id]);
-        opponents[id] = null;
-        animate();
-    }
-});
-
-// -------------------------------------------------------------------------------------
-// - interface -------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
-function interface_init()
-{
-    $('#panel').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    // select skill
-    $('#panel li').click(function(e) {
-        if($(this).hasClass('cooldown') == false)
-        {
-            $('#panel li').removeClass('active');
-            $(this).addClass('active');
-        }
-    });
-
-    // stop events for used skills
-    $('#panel li.used').on('mouseover', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-}
-
-function interfaceUseSkill(skill)
-{
-    $('#' + skill).removeClass('active');
-
-    if(skills[skill].cooldown > 0)
-    {
-        $('#' + skill)
-            .removeClass('hover')
-            .addClass('cooldown');
-
-        var s = parseInt(skills[skill].cooldown / 1000);
-        for(var i = s; i >= 0; i--)
-        {
-            setTimeout("interfaceSetSkillCooldown('particle', " + (s - i) + ")", i * 1000);
-        }
-
-        // call cooldown
-        setTimeout("interfaceSkillReloaded('particle')", skills[skill].cooldown);
-    }
-}
-
-function interfaceSkillReloaded(skill)
-{
-    $('#' + skill)
-        .addClass('hover')
-        .removeClass('cooldown');
-}
-
-function interfaceSetSkillCooldown(skill, cooldown)
-{
-    $('#' + skill + ' span').text(cooldown);
-}
-
-function interfaceShowObjectTitle(id, title, x, y)
-{
-    var el = document.getElementById(id);
-    if(el)
-    {
-        el.style.left = x;
-        el.style.top = y;
-    }
-    else
-    {
-        var parent = document.getElementById('jsThree');
-        var el = document.createElement("div");
-        el.className += ' objectTitle';
-        el.setAttribute("id", id);
-        parent.appendChild(el);
-
-        var textPlace = document.createElement("span");
-        textPlace.innerHTML = title.substring(0, 12);
-        el.appendChild(textPlace);
-
-        var healthPlace = document.createElement("span");
-        healthPlace.className += ' health';
-        healthPlace.style.width = '100%';
-        el.appendChild(healthPlace);
-    }
-}
-
-function interfaceSetHealth(id, percent)
-{
-    var el = document.getElementById(id);
-    if(el)
-    {
-        el.getElementsByClassName('health')[0].style.width = percent + '%';
-    }
-}
-
-</script>
-
-
-<div id="panel" class="panel">
-    <ul>
-        <li class="hover" id="particle">
-            <img src="/images/skills/icon_skill_magic18.jpg">
-            <span></span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                <line class="top" x1="0" y1="0" x2="900" y2="0"/>
-                <line class="left" x1="0" y1="47" x2="0" y2="-920"/>
-                <line class="bottom" x1="48" y1="47" x2="-600" y2="47"/>
-                <line class="right" x1="48" y1="0" x2="48" y2="1380"/>
-            </svg>
-        </li>
-    </ul>
-</line>
-
-<script>
-$(document).ready(function(){
-    // init interface
-    interface_init();
-});
-
-$(document).on('mousedown', function(e) {
-    onDocumentMouseDown(e);
-});
-
-$(document).on('mousemove', function(e) {
-    onMouseMove(e);
-});
-
-document.addEventListener('mousewheel', onMouseWheel, false);
-window.addEventListener('resize', onWindowResize, false);
-</script>

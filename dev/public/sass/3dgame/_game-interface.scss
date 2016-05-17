@@ -1,0 +1,202 @@
+// _game-interface.scss
+
+body{
+    overflow: hidden;
+    margin: 0;
+}
+
+#frame{
+    overflow: hidden;
+}
+
+canvas {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+}
+
+
+.panel{
+    position: fixed;
+    bottom: 0;
+    left: 10%;
+    background: rgba(0, 0, 0, .5);
+    padding: 10px 5px;
+    margin: 0;
+    border-radius: 10px 10px 0 0;
+
+    & ul{
+        margin: 0;
+        padding: 0;
+
+        & li{
+        	position: relative;
+	        display: inline-block;
+	        width: 48px;
+	        height: 47px;
+	        cursor: pointer;
+	        margin: 0 10px;
+	        background: rgba(0,0,0,0);
+	        color: #fff;
+	        transition: background 0.3s;
+	        box-shadow: 0 0 5px #000000;
+
+        	& img{
+		        opacity: .5;
+		        width: 48px;
+       			height: 47px;
+		    }
+
+		    & svg{
+		        position: absolute;
+		        top: 0;
+		        left: 0;
+
+		        & line{
+			        stroke-width: 1;
+			        stroke: #ecf0f1;
+			        fill: none;
+			        -webkit-transition: all .8s ease-in-out;
+			        transition: all .8s ease-in-out;
+			    }
+		    }
+
+		    & span{
+				text-align: center;
+		        font-size: 28px;
+		        width: 100%;
+		        text-shadow: 0 0 10px #000000;
+		        position: absolute;
+		        top: 8px;
+		        left: 0;
+		        display: none;
+		    }
+
+	        &.hover{
+	        	& img{
+			        opacity: 1;
+	        	}
+
+	        	&:hover{
+	        		background: rgba(255,255,255,0);
+        			transition-delay: 0s;
+
+		        	& img{
+		        		opacity: 1;
+		        	}
+
+		        	& svg{
+		        		box-shadow: 0 0 10px #FFA200;
+		        	}
+		        }
+
+		        &.active{
+		        	background: rgba(255,255,255,0);
+        			transition-delay: 0s;
+
+		        	& img{
+						opacity: 1;
+		        	}
+
+		        	& svg{
+		        		box-shadow: 0 0 10px #FFA200;
+		        	}
+		        }
+	        }
+
+		    &.cooldown span{
+		        display: block;
+		    }
+	    }
+    }
+
+    &:hover{
+    	& li{
+    		&.hover{
+    			img{
+    				opacity: .8;
+    			}
+    		}
+    	}
+    }
+}
+
+.panel ul li.hover:hover svg line,
+.panel ul li.hover.active svg line{
+    stroke: #FFA200;
+    -webkit-transition-delay: 0.1s;
+    transition-delay: 0.1s;
+    background: rgba(0,0,0,0.4);
+}
+
+.panel ul li svg line.top,
+.panel ul li svg line.bottom{
+    stroke-dasharray: 63 16;
+}
+
+.panel ul li svg line.left,
+.panel ul li svg line.right{
+    stroke-dasharray: 63 16;
+}
+
+.panel ul li.hover:hover svg line.top,
+.panel ul li.hover.active svg line.top{
+    -webkit-transform: translateX(-48px);
+    transform: translateX(-48px);
+}
+
+.panel ul li.hover:hover svg line.bottom,
+.panel ul li.hover.active svg line.bottom{
+    -webkit-transform: translateX(48px);
+    transform: translateX(48px);
+}
+
+.panel ul li.hover:hover svg line.left,
+.panel ul li.hover.active svg line.left{
+    -webkit-transform: translateY(47px);
+    transform: translateY(47px);
+}
+
+.panel ul li.hover:hover svg line.right,
+.panel ul li.hover.active svg line.right{
+    -webkit-transform: translateY(-47px);
+    transform: translateY(-47px);
+}
+
+.panel ul li svg line{
+    -webkit-transition: all .5s;
+    transition: all .5s;
+}
+
+.panel ul li.hover:hover svg line,
+.panel ul li.hover.active svg line{
+    stroke-width: 4;
+    -webkit-transition-delay: 0s;
+    transition-delay: 0s;
+}
+
+.objectTitle{
+    position: absolute;
+    color: #00EF2A;
+    width: 100px;
+    height: 18px;
+    font-size: 12px;
+    text-align: center;
+    margin: -80px 0 0 -50px;
+    padding: 0;
+    background: rgba(0, 0, 0, .5);
+    box-sizing: border-box;
+    box-shadow: 0 0 10px #000000;
+    border: 1px solid #000000;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: default;
+}
+
+.health{
+    background: #00EF2A;
+    display: block;
+    height: 2px;
+    margin: 0 auto;
+}

@@ -1,5 +1,6 @@
 var game_model = require(__dirname + '/model/game.js'),
 	game3d_model = require(__dirname + '/model/game3d.js'),
+	game3dLogic_model = require(__dirname + '/model/game3dLogic.js'),
 	socket_model = require(__dirname + '/model/socket.js');
 
 module.exports = function(io) {
@@ -83,6 +84,14 @@ module.exports = function(io) {
 				action: 'skills_apply_for_player',
 				activeSkills: data.activeSkills
 			});
+		});
+
+		/**** 3D Game Logic - events ****/
+		game3dLogic_model.loopGameActionsInit(io);
+
+		// init events
+		game3dLogic_model.action(io, socket, {
+			action: 'eventsInit'
 		});
 	});
 }

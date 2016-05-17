@@ -18,11 +18,11 @@ socket.on('redirect', function(data){
 });
 
 socket.on('find game started', function(data){
-	$('#find_game').parents('li').addClass('loading');
+	$('#find_game').addClass('loading');
 });
 
 socket.on('canceled find game', function(data){
-	$('#find_game').parents('li').removeClass('loading');
+	$('#find_game').removeClass('loading');
 });
 
 socket.on('find game 1x1 - confirm', function(data){
@@ -65,6 +65,9 @@ socket.on('skills new status', function(data){
 /////////////////////////////////
 // jQuery events
 /////////////////////////////////
+
+contextMenuInit();
+ScrollbarInit();
 
 $('#find_game').click(function(e){
 	e.preventDefault();
