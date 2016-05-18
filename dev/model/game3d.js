@@ -6,7 +6,8 @@ module.exports = {
 	createCharacter: createCharacter,
 	action: action,
 	getPlayers: getPlayers,
-	getPlayerBySocketId: getPlayerBySocketId
+	getPlayerBySocketId: getPlayerBySocketId,
+	setPlayerProperties: setPlayerProperties
 };
 
 // load up the game model
@@ -37,6 +38,23 @@ function getPlayers()
 function getPlayerBySocketId(socket_id)
 {
 	return PlayersData[PlayersSocketToId[socket_id]];
+}
+
+function setPlayerProperties(socket_id, param, value)
+{
+	var pr = param.split(".");
+	if(pr.length == 1)
+	{
+		PlayersData[PlayersSocketToId[socket_id]][pr[0]] = value;
+	}
+	else if(pr.length == 2)
+	{
+		PlayersData[PlayersSocketToId[socket_id]][pr[0]][pr[1]] = value;
+	}
+	else if(pr.length == 3)
+	{
+		PlayersData[PlayersSocketToId[socket_id]][pr[0]][pr[1]][pr[2]] = value;
+	}
 }
 
 // load all skills info
@@ -159,9 +177,7 @@ function playerInit(socket)
 			status: 'available',
 			character: rows[0],
 			maxActiveSkills: 3,
-			name: socket.id,
-		    startPosition: {x: 0, y: 0, z: 0},
-		    moveSpeed: 200
+			name: socket.id
 		};
 
 	    // link socket id to user id

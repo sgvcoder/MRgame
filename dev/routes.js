@@ -134,7 +134,7 @@ module.exports = function(app, passport) {
     // =====================================
     // 3D scene
     // =====================================
-    app.get('/3dscene', function(req, res) {
+    app.get('/3dscene', isLoggedIn, function(req, res) {
         res.render('3d/map.ejs', {
             title: '3D Scene',
             descriptions: '3D Scene descriptions'

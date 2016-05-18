@@ -6,12 +6,14 @@ module.exports = {
 	loopGameActionsInit: loopGameActionsInit
 };
 
-// load up the game model
+var config = require('../config/game3d.js');
+
 var mysql = require('mysql'),
 	dbconfig = require('../config/database'),
 	cookie = require('cookie'),
 	ejs = require('ejs'),
 	fs = require('fs'),
+	astar = require('./astar.js'),
 	core = require('./game3d.js');
 
 // database init
@@ -19,7 +21,7 @@ var connection = mysql.createConnection(dbconfig.connection);
 connection.query('USE ' + dbconfig.database);
 
 /**
- * render actions of players. ~28 FPS
+ * render actions. ~28 FPS
  * @param  {object} io
  * @return {void}
  */
@@ -27,7 +29,7 @@ function loopGameActionsInit(io)
 {
 	console.log('\n>>>>> loopGameActionsInit <<<<<\n');
 
-	var loopGameActions = setInterval(function() {
+	var loopGameActions = setInterval(function(){
 
 	}, 35);
 }
@@ -50,85 +52,72 @@ function action(io, socket, data)
 	}
 }
 
-var config = {
-    debug: {
-        enabled: true
-    },
-    scene: {
-        fog: {
-            enabled: false
-        }
-    },
-    camera: {
-        angle: 45,
-        near: 0.1,
-        far: 1000,
-        startX: 0,
-        startY: 50,
-        startZ: 100,
-        controls: {
-            enabled: true,
-            minDistance: -190,
-            maxDistance: -10,
-            minPolarAngle: Math.PI / 6,
-            maxPolarAngle: Math.PI / 1.2,
-            noKeys: true,
-            noPan: true,
-            noRotate: false,
-            moveSpeed: 10,
-            screenPadding: 0.95,
-            worldSizeCube: 1165
-        }
-    },
-    map: {
-        cols: 0,
-        rows: 0,
-        matrix: require('../maps/demo.js'),
-        showGrid: false
-    },
-    floor: {
-        width: 3000,
-        length: 3000,
-        position: {
-            y: -250
-        }
-    },
-    light: {
-        castShadow: true,
-        frameCastShadow: false,
-        power: 1500
-    },
-    sound: {
-        maxDistance: 500
-    },
-    keyboard: {
-    }
-};
-
-var audioFiles = {
-    skills: {
-        particle: {
-            start: 'sounds/effects/fishing_polecastLine_01.wav',
-            collision: 'sounds/effects/clap_1.wav'
-        }
-    },
-    move: 'sounds/effects/grass_walk_02.wav',
-    music: [
-        ''
-    ]
-};
-
 function eventsInit(io, socket)
 {
+	/**
+	 * load configs
+	 */
 	socket.on('get map data', function(){
-		console.log('send map data');
-		socket.emit('map data', {
-			config: config,
-			audioFiles: audioFiles,
-			player: core.getPlayerBySocketId(socket.id)
-		});
+		core.setPlayerProperties(socket.id, 'position', {x: 0, y: config.scene.floor.position.y, z: 0});
+		core.setPlayerProperties(socket.id, 'moveSpeed', 200);
+		core.setPlayerProperties(socket.id, 'character.model', 'threeObjects/butterfly_low.js');
 
+		// send data to user
+		socket.emit('map data', {
+			config: config.scene,
+			audioFiles: config.audioFiles,
+			player: core.getPlayerBySocketId(socket.id),
+			decor: config.decorList
+		});
 	});
+
+	/**
+	 * click on object
+	 */
+	socket.on('click on object', function(object){
+		switch(object.name)
+		{
+			case 'Floor':
+				sceneMovePlayer(socket, object);
+				break;
+			default: return;
+		}
+		console.log('click on:', object.name, socket.id);
+	});
+}
+
+function sceneMovePlayer(socket, targetData)
+{
+	var player = core.getPlayerBySocketId(socket.id);
+
+	// convert world position to local position by floor
+    var local_x = parseInt(player.position.x + (config.scene.floor.width / 2)),
+        local_z = parseInt(player.position.z + (config.scene.floor.length / 2));
+
+    // get coordinates on matrix
+    var move_from = getMapClickPosition(local_x, local_z),
+        move_to = getMapClickPosition(targetData.mouse_pos.x, targetData.mouse_pos.z);
+
+    // get move path
+    var graph = new astar.graph(config.scene.map.matrix, {
+        diagonal: true
+    });
+
+    var start = graph.grid[move_from.row][move_from.column],
+        end = graph.grid[move_to.row][move_to.column],
+        path = astar.core().search(graph, start, end, {
+            heuristic: astar.core().heuristics.diagonal
+        });
+
+    console.log(path);
+}
+
+function getMapClickPosition(pixel_x, pixel_z)
+{
+    return {
+        column: parseInt((pixel_x / config.scene.floor.width) * config.scene.map.matrix[0].length),
+        row: parseInt((pixel_z / config.scene.floor.length) * config.scene.map.matrix.length)
+    };
 }
 
 function error(name, err, socket)

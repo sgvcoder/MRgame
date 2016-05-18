@@ -25,7 +25,8 @@ var OBJLoader,
 // base config
 var config = {},
 	audioFiles = {},
-	player = {};
+	player = {},
+	decor = [];
 
 var opponents = {};
 var particleSystems = [];
@@ -79,6 +80,7 @@ socket.on('map data', function(data){
 	config = data.config;
 	audioFiles = data.audioFiles;
 	player = data.player;
+	decor = data.decor;
 
 	// init window data
 	config.window = {
@@ -311,9 +313,11 @@ function init ()
     }
     else
     {
-        console.log('WebGLRenderer is disabled!');
+        alert('WebGLRenderer is disabled!');
+        location.href = '/dashboard';
         return false;
     }
+
     renderer.setSize(config.window.width, config.window.height);
     renderer.shadowMap.enabled = config.light.castShadow;
     renderer.gammaInput = true;
@@ -343,14 +347,13 @@ function init ()
     _create_camera();
     _create_light();
     _create_floor();
-    _create_sky();
     _create_sounds();
 
     // add player
     add_player('player');
 
-    // load decor
-    _create_decor();
+    // load decor (start index 0 from decor list)
+    _create_decor(0);
 
     // add frames
     // add_frames();
@@ -358,10 +361,10 @@ function init ()
     // get array of objects
     createArrayOfObjects();
 
-    if(config.map.showGrid === true)
-    {
-        show_grid();
-    }
+    // if(config.map.showGrid === true)
+    // {
+    //     show_grid();
+    // }
 
 
     if(config.debug.enabled)
@@ -395,20 +398,6 @@ function createArrayOfObjects()
         // if(value.name != 'Floor')
         return [value];
     });
-}
-
-function showMatrix()
-{
-    for(var y = 0; y < config.map.rows; y++)
-    {
-        var str = y + ': ';
-        // var str = '';
-        for(var x = 0; x < config.map.cols; x++)
-        {
-            str += config.map.matrix[y][x];
-        }
-        console.log(str);
-    }
 }
 
 function _create_camera()
@@ -457,26 +446,12 @@ function _create_floor()
 {
     var loader = new THREE.TextureLoader();
     var texture = loader.load('images/textures/dota_map_full_compress2.jpg');
-    // var bumpMap = loader.load("images/textures/dota_map_full_compress2_bump.jpg");
-    // var displacementMap = loader.load("images/textures/dota_map_full_compress2_displacement.jpg");
-    // var normalMap = loader.load("images/textures/dota_map_full_compress2_NormalMap.jpg");
 
     var material = new THREE.MeshStandardMaterial({
         map: texture,
         refractionRatio: 0,
         roughness: 1,
         metalness: 0,
-
-        // normalMap: normalMap,
-        // normalScale: new THREE.Vector2(1, -1),
-
-        // aoMap: bumpMap,
-        // aoMapIntensity: 1,
-
-        // displacementMap: displacementMap,
-        // displacementScale: 2.436143,
-        // displacementBias: - 0.428408,
-
         side: THREE.DoubleSide
     });
 
@@ -490,11 +465,6 @@ function _create_floor()
     floorMesh.callback = object_click;
     sceneObjects.floor = floorMesh;
     scene.add(floorMesh);
-}
-
-function _create_sky()
-{
-
 }
 
 function _create_sounds()
@@ -522,29 +492,11 @@ function _create_light()
     spotLight.shadow.mapSize.width = 1024;
     spotLight.shadow.mapSize.height = 1024;
     // shadow camera helper
-    spotLight.shadowCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera); // colored lines
+    spotLight.shadowCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
     spotLight.shadow.camera.near = 0.1;
     spotLight.shadow.camera.far = 20000;
-    // lightHelper = new THREE.SpotLightHelper(spotLight);
     scene.add(spotLight);
-    // spotLight.add(spotLight.shadowCameraHelper);
-    // scene.add(new THREE.AxisHelper(10));
-    // scene.add(lightHelper);
 
-    // light = new THREE.PointLight(0xffffff, 1, config.light.power);
-    // light.position.set(0, 200, 0).multiplyScalar(1.1);
-    // light.castShadow = config.light.castShadow;
-    // light.decay = 2;
-    // // light.distance = 1000;
-    // var d = 200;
-    // light.shadow.camera.left = -d;
-    // light.shadow.camera.right = d;
-    // light.shadow.camera.top = d * 1.5;
-    // light.shadow.camera.bottom = -d;
-    // light.shadow.camera.far = config.floor.width;
-    // light.shadow.mapSize.width = 512;
-    // light.shadow.mapSize.height = 512;
-    // scene.add(light);
     scene.add(new THREE.HemisphereLight(0x111111, 0x111111));
 }
 
@@ -560,98 +512,93 @@ function loadSoundFile(audioFile, methodName)
     });
 }
 
-function show_grid()
+// function show_grid()
+// {
+//     // create object - cube
+//     var geometry = new THREE.CubeGeometry(config.floor.width, 10, config.floor.length, config.map.cols, 1, config.map.rows);
+//     var material = new THREE.MeshPhongMaterial({
+//         color: 0xff0000,
+//         wireframe: true
+//     });
+//     var mesh = new THREE.Mesh(geometry, material);
+//     mesh.position.set(0, 0, 0);
+
+//     mesh.name = "Grid";
+//     mesh.callback = object_click;
+//     mesh.position.set(0, config.floor.position.y, 0);
+//     sceneObjects.cube = mesh;
+//     scene.add(mesh);
+// }
+
+// function add_frames()
+// {
+//     // create objects
+//     var material = new THREE.MeshPhongMaterial({
+//         color: 0xffffff
+//     });
+//     var geometry = new THREE.CubeGeometry(10, 5, 10, 1, 1, 1);
+//     var cube = new THREE.Mesh(geometry, material);
+//     cube.name = "default";
+//     cube.collision = true;
+//     cube.callback = object_click;
+//     cube.position.set(-500, 0, 0);
+//     cube.castShadow = config.light.frameCastShadow;
+//     cube.receiveShadow = config.light.frameCastShadow;
+//     var check_positions;
+
+//     for(var y = 1; y < config.map.matrix.length - 1; y++)
+//     {
+//         for(var x = 1; x < config.map.matrix[0].length - 1; x++)
+//         {
+//             if(config.map.matrix[y][x] == 0)
+//             {
+//                 check_positions = getMapPositionToPixels(y, x);
+//                 var clone = cube.clone();
+//                 clone.name = 'frame_' + y + '_' + x;
+//                 clone.position.set(check_positions.x + 5, config.floor.position.y, check_positions.z + 5);
+//                 clone.callback = object_click;
+//                 sceneObjects['frame_' + y + '_' + x] = clone;
+//                 sceneCollisionObjects.push(clone);
+//                 scene.add(clone);
+//             }
+//         }
+//     }
+// }
+
+function _create_decor(i)
 {
-    // create object - cube
-    var geometry = new THREE.CubeGeometry(config.floor.width, 10, config.floor.length, config.map.cols, 1, config.map.rows);
-    var material = new THREE.MeshPhongMaterial({
-        color: 0xff0000,
-        wireframe: true
-    });
-    var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, 0, 0);
+	loaderObjectFromJS.load(decor[i].model, function (geometry, materials){
+        createScene(geometry, materials, {
+            x: decor[i].position.x,
+            y: decor[i].position.y,
+            z: decor[i].position.z
+        }, {
+            x: decor[i].rotate.x,
+            y: decor[i].rotate.y,
+            z: decor[i].rotate.z
+        }, decor[i].scale, decor[i].type, decor[i].objectName);
 
-    mesh.name = "Grid";
-    mesh.callback = object_click;
-    mesh.position.set(0, config.floor.position.y, 0);
-    sceneObjects.cube = mesh;
-    scene.add(mesh);
-}
-
-function add_frames()
-{
-    // create objects
-    var material = new THREE.MeshPhongMaterial({
-        color: 0xffffff
-    });
-    var geometry = new THREE.CubeGeometry(10, 5, 10, 1, 1, 1);
-    var cube = new THREE.Mesh(geometry, material);
-    cube.name = "default";
-    cube.collision = true;
-    cube.callback = object_click;
-    cube.position.set(-500, 0, 0);
-    cube.castShadow = config.light.frameCastShadow;
-    cube.receiveShadow = config.light.frameCastShadow;
-    var check_positions;
-
-    for(var y = 1; y < config.map.matrix.length - 1; y++)
-    {
-        for(var x = 1; x < config.map.matrix[0].length - 1; x++)
+        // next load
+        if(i < (decor.length - 1))
         {
-            if(config.map.matrix[y][x] == 0)
-            {
-                check_positions = getMapPositionToPixels(y, x);
-                var clone = cube.clone();
-                clone.name = 'frame_' + y + '_' + x;
-                clone.position.set(check_positions.x + 5, config.floor.position.y, check_positions.z + 5);
-                clone.callback = object_click;
-                sceneObjects['frame_' + y + '_' + x] = clone;
-                sceneCollisionObjects.push(clone);
-                scene.add(clone);
-            }
+        	_create_decor(i + 1);
         }
-    }
-}
-
-function _create_decor()
-{
-    loaderObjectFromJS.load('threeObjects/woods.js', function (geometry, materials){
-        createScene(geometry, materials, {
-            x: -865,
-            y: -235,
-            z: 905
-        }, {
-            x: 0.4,
-            y: 0,
-            z: 0
-        }, 5, 'decor', 'woods');
-    });
-    loaderObjectFromJS.load('threeObjects/old_farm.js', function (geometry, materials){
-        createScene(geometry, materials, {
-            x: -50,
-            y: config.floor.position.y - 1,
-            z: -100
-        }, {
-            x: 0,
-            y: 2,
-            z: 0
-        }, 3, 'decor', 'old_farm');
     });
 }
 
 function add_player(objectType)
 {
     // load the model
-    loaderObjectFromJS.load('threeObjects/butterfly_low.js', function (geometry, materials){
+    loaderObjectFromJS.load(player.character.model, function (geometry, materials){
         createScene(geometry, materials, {
-            x: 0,
-            y: config.floor.position.y,
-            z: 0
+            x: player.position.x,
+            y: player.position.y,
+            z: player.position.z
         }, {
             x: 0,
             y: 0,
             z: 0
-        }, 0.3, objectType, 'player');
+        }, 0.3, objectType, player.name);
     });
 }
 
@@ -756,6 +703,13 @@ function pingOtherObjectsForPlayer()
 function object_click()
 {
     console.log('click on ', this.name);
+    socket.emit('click on object', {
+    	name: this.name,
+    	mouse_pos: {
+    		x: sceneObjects.floor.mouse_pos.x,
+    		z: sceneObjects.floor.mouse_pos.z
+    	}
+    });
     if(this.name == 'Floor')
     {
         // console.log('click position: ', this.mouse_pos);
