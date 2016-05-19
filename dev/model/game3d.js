@@ -172,19 +172,22 @@ function playerInit(socket)
 		    return;
 	    }
 
-	    // create player
-		PlayersData[rows[0].user_id] = {
-			status: 'available',
-			character: rows[0],
-			maxActiveSkills: 3,
-			name: socket.id
-		};
-
-	    // link socket id to user id
-		PlayersSocketToId[socket.id] = rows[0].user_id;
+	    if(typeof PlayersData[rows[0].user_id] == 'undefined')
+	    {
+		    // create player
+			PlayersData[rows[0].user_id] = {
+				status: 'available',
+				character: rows[0],
+				maxActiveSkills: 3,
+				name: socket.id
+			};
+		}
 
 	    // skills init
 	    playerSkillsInit(socket, rows[0]);
+
+		// link socket id to user id
+		PlayersSocketToId[socket.id] = rows[0].user_id;
 	});
 }
 

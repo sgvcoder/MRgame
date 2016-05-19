@@ -99,27 +99,24 @@ socket.on('map data', function(data){
 	inputDevicesInit();
 });
 
-socket.on('send position', function(data){
-    if('/#' + socket.id == data.id)
-    {
-        return;
-    };
-
-    if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
+socket.on('new player data', function(data){
+	console.log(data);
+	if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
     {
         if(opponents[data.id] != 'loading')
         {
-            opponents[data.id] = 'loading';
-            add_player(data.id);
+        	console.log('>>> object is undefined');
+            // opponents[data.id] = 'loading';
+            // add_player(data.id);
         }
     }
-    else if(data.action)
+    else if(data.animateAction)
     {
-        if(data.action == 'stay')
+    	if(data.animateAction == 'stay')
         {
             objectAnimationStay(opponents[data.id], false);
         }
-        else if(data.action == 'move')
+        else if(data.animateAction == 'move')
         {
             if(opponents[data.id].action.status != 'move')
             {
@@ -129,9 +126,44 @@ socket.on('send position', function(data){
         }
 
         opponents[data.id].position.x = data.position.x;
+        opponents[data.id].position.y = data.position.y;
         opponents[data.id].position.z = data.position.z;
     }
 });
+
+// socket.on('send position', function(data){
+//     if('/#' + socket.id == data.id)
+//     {
+//         return;
+//     };
+
+//     if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
+//     {
+//         if(opponents[data.id] != 'loading')
+//         {
+//             opponents[data.id] = 'loading';
+//             add_player(data.id);
+//         }
+//     }
+//     else if(data.action)
+//     {
+//         if(data.action == 'stay')
+//         {
+//             objectAnimationStay(opponents[data.id], false);
+//         }
+//         else if(data.action == 'move')
+//         {
+//             if(opponents[data.id].action.status != 'move')
+//             {
+//                 objectAnimationMove(opponents[data.id], false);
+//             }
+//             objectRotateTo(opponents[data.id], data.position.x, data.position.z);
+//         }
+
+//         opponents[data.id].position.x = data.position.x;
+//         opponents[data.id].position.z = data.position.z;
+//     }
+// });
 
 socket.on('use skill', function(data){
     if('/#' + socket.id == data.id || typeof opponents[data.id] === 'undefined')
@@ -350,7 +382,7 @@ function init ()
     _create_sounds();
 
     // add player
-    add_player('player');
+    add_player('/#' + socket.id);
 
     // load decor (start index 0 from decor list)
     _create_decor(0);
@@ -710,11 +742,11 @@ function object_click()
     		z: sceneObjects.floor.mouse_pos.z
     	}
     });
-    if(this.name == 'Floor')
-    {
-        // console.log('click position: ', this.mouse_pos);
-        move_object();
-    }
+    // if(this.name == 'Floor')
+    // {
+    //     // console.log('click position: ', this.mouse_pos);
+    //     move_object();
+    // }
 }
 
 function move_object()
@@ -901,6 +933,7 @@ function objectRotateTo(object, new_x, new_z)
     var radians = Math.acos(up.dot(tangent));
     object.matrix.makeRotationAxis(axis.normalize(), radians);
     object.rotation.setFromRotationMatrix(object.matrix);
+    console.log(object.rotation);
 }
 
 function objectAnimationStay(object, isPublic)
@@ -1336,8 +1369,9 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
             move: mesh.mixer.clipAction(geometry.animations[1], null)
         };
 
-        if(objectType == 'player')
+        if(objectType == socket.id)
         {
+        	// curent user
             sceneObjects.player = mesh;
             scene.add(mesh);
 

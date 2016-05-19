@@ -56,6 +56,10 @@ module.exports = {
         }
     },
 
+    player: {
+        defaultSpeed: 5
+    },
+
     audioFiles: {
         skills: {
             particle: {
@@ -86,4 +90,5 @@ module.exports = {
             objectName: 'old_farm'
         }
     ]
+
 };

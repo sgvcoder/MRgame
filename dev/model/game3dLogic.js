@@ -6,30 +6,59 @@ module.exports = {
 	loopGameActionsInit: loopGameActionsInit
 };
 
+// load map config
 var config = require('../config/game3d.js');
 
-var mysql = require('mysql'),
-	dbconfig = require('../config/database'),
-	cookie = require('cookie'),
-	ejs = require('ejs'),
-	fs = require('fs'),
-	astar = require('./astar.js'),
+var astar = require('./astar.js'),
 	core = require('./game3d.js');
 
-// database init
-var connection = mysql.createConnection(dbconfig.connection);
-connection.query('USE ' + dbconfig.database);
+// init loop tasks
+var TASKS = [];
+
+// calc length of cell
+var cellLength = parseInt(config.scene.floor.width / config.scene.map.matrix.length);
 
 /**
  * render actions. ~28 FPS
  * @param  {object} io
  * @return {void}
  */
+var removeIdex;
 function loopGameActionsInit(io)
 {
 	console.log('\n>>>>> loopGameActionsInit <<<<<\n');
 
 	var loopGameActions = setInterval(function(){
+		for (var i = 0; i < TASKS.length; i++)
+		{
+			switch(TASKS[i].action)
+			{
+				case 'move':
+					if(TASKS[i].path.length == 0)
+					{
+						// remove task if steps out
+					    TASKS.splice(i, 1);
+						continue;
+					}
+
+					// set postition to user
+					core.setPlayerProperties(TASKS[i].socket_id, 'position.x', TASKS[i].path[0].x);
+					core.setPlayerProperties(TASKS[i].socket_id, 'position.y', TASKS[i].path[0].y);
+					core.setPlayerProperties(TASKS[i].socket_id, 'position.z', TASKS[i].path[0].z);
+
+					// send position to socket
+					io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
+						id: TASKS[i].socket_id,
+						animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
+						position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
+					});
+
+					// remove curent position
+				    TASKS[i].path.splice(0, 1);
+					break;
+				default: console.log('*** loop action "' + TASKS[i].action + '" not found!');
+			}
+		}
 
 	}, 35);
 }
@@ -58,9 +87,13 @@ function eventsInit(io, socket)
 	 * load configs
 	 */
 	socket.on('get map data', function(){
-		core.setPlayerProperties(socket.id, 'position', {x: 0, y: config.scene.floor.position.y, z: 0});
-		core.setPlayerProperties(socket.id, 'moveSpeed', 200);
-		core.setPlayerProperties(socket.id, 'character.model', 'threeObjects/butterfly_low.js');
+		var player = core.getPlayerBySocketId(socket.id);
+		if(typeof player.position == 'undefined')
+		{
+			core.setPlayerProperties(socket.id, 'position', {x: 0, y: config.scene.floor.position.y, z: 0});
+			core.setPlayerProperties(socket.id, 'moveSpeed', config.player.defaultSpeed);
+			core.setPlayerProperties(socket.id, 'character.model', 'threeObjects/butterfly_low.js');
+		}
 
 		// send data to user
 		socket.emit('map data', {
@@ -69,6 +102,7 @@ function eventsInit(io, socket)
 			player: core.getPlayerBySocketId(socket.id),
 			decor: config.decorList
 		});
+
 	});
 
 	/**
@@ -88,7 +122,12 @@ function eventsInit(io, socket)
 
 function sceneMovePlayer(socket, targetData)
 {
-	var player = core.getPlayerBySocketId(socket.id);
+	var player = core.getPlayerBySocketId(socket.id),
+		moveTask = {
+			action: 'move',
+			socket_id: socket.id,
+			path: []
+		};
 
 	// convert world position to local position by floor
     var local_x = parseInt(player.position.x + (config.scene.floor.width / 2)),
@@ -100,23 +139,55 @@ function sceneMovePlayer(socket, targetData)
 
     // get move path
     var graph = new astar.graph(config.scene.map.matrix, {
-        diagonal: true
-    });
-
-    var start = graph.grid[move_from.row][move_from.column],
+	        diagonal: true
+	    }),
+    	start = graph.grid[move_from.row][move_from.column],
         end = graph.grid[move_to.row][move_to.column],
         path = astar.core().search(graph, start, end, {
             heuristic: astar.core().heuristics.diagonal
         });
 
-    console.log(path);
+    // create steps
+    var localCoordinates;
+    for(var i = 0; i < path.length; i++)
+    {
+    	localCoordinates = getMapPositionToPixels(path[i].x, path[i].y);
+    	moveTask.path.push({
+    		x: localCoordinates.x,
+    		y: player.position.y,
+    		z: localCoordinates.z
+    	});
+    }
+
+    // add to loop function
+    TASKS.push(moveTask);
 }
 
+/**
+ * conver local pixels to matrix positino
+ * @param  {[type]} local x
+ * @param  {[type]} local z
+ * @return {[type]}
+ */
 function getMapClickPosition(pixel_x, pixel_z)
 {
     return {
         column: parseInt((pixel_x / config.scene.floor.width) * config.scene.map.matrix[0].length),
         row: parseInt((pixel_z / config.scene.floor.length) * config.scene.map.matrix.length)
+    };
+}
+
+/**
+ * conver matrix position to local pixels
+ * @param  {[type]} row
+ * @param  {[type]} column
+ * @return {[type]}
+ */
+function getMapPositionToPixels(row, column)
+{
+    return {
+        x: (column * (config.scene.floor.width / config.scene.map.matrix[0].length)) - config.scene.floor.width / 2,
+        z: (row * ((config.scene.floor.length / config.scene.map.matrix.length)) + -(config.scene.floor.length / 2))
     };
 }
 

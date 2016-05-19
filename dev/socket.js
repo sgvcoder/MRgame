@@ -1,9 +1,12 @@
-var game_model = require(__dirname + '/model/game.js'),
-	game3d_model = require(__dirname + '/model/game3d.js'),
+var game3d_model = require(__dirname + '/model/game3d.js'),
 	game3dLogic_model = require(__dirname + '/model/game3dLogic.js'),
 	socket_model = require(__dirname + '/model/socket.js');
 
 module.exports = function(io) {
+
+	/**** 3D Game Logic - events ****/
+	game3dLogic_model.loopGameActionsInit(io);
+
 	io.on('connection', function(socket){
 		// save new io session
 		socket_model.connected(io, socket);
@@ -15,24 +18,9 @@ module.exports = function(io) {
 			});
 		});
 
-		socket.on('find_game', function(flag){
-			game_model.find(io, socket);
-		});
-
-		socket.on('get_board', function(flag){
-			game_model.get_board(socket);
-		});
-
-		socket.on('set_position', function(position){
-			game_model.set_position(io, socket, JSON.parse(position));
-		});
-
-		socket.on('end_game', function(flag){
-			game_model.end_game(io, socket);
-		});
-
-		socket.on('game_mousemove', function(xy){
-			game_model.game_mousemove(io, socket, xy);
+		// init events of game3dLogic
+		game3dLogic_model.action(io, socket, {
+			action: 'eventsInit'
 		});
 
 		/**** 3D Game - events ****/
@@ -84,14 +72,6 @@ module.exports = function(io) {
 				action: 'skills_apply_for_player',
 				activeSkills: data.activeSkills
 			});
-		});
-
-		/**** 3D Game Logic - events ****/
-		game3dLogic_model.loopGameActionsInit(io);
-
-		// init events
-		game3dLogic_model.action(io, socket, {
-			action: 'eventsInit'
 		});
 	});
 }
