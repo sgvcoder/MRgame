@@ -100,7 +100,6 @@ socket.on('map data', function(data){
 });
 
 socket.on('new player data', function(data){
-	console.log(data);
 	if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
     {
         if(opponents[data.id] != 'loading')
@@ -124,56 +123,51 @@ socket.on('new player data', function(data){
             }
             objectRotateTo(opponents[data.id], data.position.x, data.position.z);
         }
-
-        opponents[data.id].position.x = data.position.x;
-        opponents[data.id].position.y = data.position.y;
-        opponents[data.id].position.z = data.position.z;
+        runTween(opponents[data.id], data.position, data.speed);
     }
 });
 
-// socket.on('send position', function(data){
-//     if('/#' + socket.id == data.id)
-//     {
-//         return;
-//     };
-
-//     if(typeof opponents[data.id] === 'undefined' || opponents[data.id] == 'loading')
-//     {
-//         if(opponents[data.id] != 'loading')
-//         {
-//             opponents[data.id] = 'loading';
-//             add_player(data.id);
-//         }
-//     }
-//     else if(data.action)
-//     {
-//         if(data.action == 'stay')
-//         {
-//             objectAnimationStay(opponents[data.id], false);
-//         }
-//         else if(data.action == 'move')
-//         {
-//             if(opponents[data.id].action.status != 'move')
-//             {
-//                 objectAnimationMove(opponents[data.id], false);
-//             }
-//             objectRotateTo(opponents[data.id], data.position.x, data.position.z);
-//         }
-
-//         opponents[data.id].position.x = data.position.x;
-//         opponents[data.id].position.z = data.position.z;
-//     }
-// });
-
 socket.on('use skill', function(data){
-    if('/#' + socket.id == data.id || typeof opponents[data.id] === 'undefined')
-    {
-        return;
-    };
+    // rotate player to target
+    objectRotateTo(opponents[data.id], data.endPosition.world_x, data.endPosition.world_z)
 
-    console.log('use skill', data.id);
-    useSkill(opponents[data.id], data.targetPosition, false);
+    // set start position
+    opponents[data.id].skills.particle.options.position.x = data.startPosition.x;
+    opponents[data.id].skills.particle.options.position.y = data.startPosition.y + 5;
+    opponents[data.id].skills.particle.options.position.z = data.startPosition.z;
+    opponents[data.id].skills.particle.isRun = true;
+
+    // start animation
+    runTween(opponents[data.id].skills.particle.options, {
+        x: data.endPosition.world_x,
+        y: opponents[data.id].skills.particle.options.position.y,
+        z: data.endPosition.world_z
+    }, opponents[data.id].skills.particle.speed, true, calbackSkillParticle, opponents[data.id]);
+
+    // start sound
+    soundSetVolumeByDistance('particle', opponents[data.id]);
+    soundPlay('particle');
+
+    if('/#' + socket.id == data.id)
+    {
+    	// call interface
+        interfaceUseSkill('particle');
+    }
 });
+
+socket.on('skill cooldown', function(data){
+	if(parseInt(data.time) < 0)
+	{
+		// stop cooldown
+		interfaceSkillReloaded('particle');
+	}
+	else
+	{
+		// set time
+		interfaceSetSkillCooldown('particle', data.time);
+	}
+});
+
 
 socket.on('opponent disconnected', function(id){
     console.log('player id: ' + id + ' disconnected');
@@ -227,8 +221,7 @@ function interfaceCreateSkillsPanel()
 {
 	for (var i = 0; i < player.skills.length; i++)
 	{
-		$('#panel #skills').append('<li class="hover" id="particle"><img src="/images/skills/' + player.skills[i].image + '"><span></span><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><line class="top" x1="0" y1="0" x2="900" y2="0"/><line class="left" x1="0" y1="47" x2="0" y2="-920"/><line class="bottom" x1="48" y1="47" x2="-600" y2="47"/><line class="right" x1="48" y1="0" x2="48" y2="1380"/></li>');
-		player.skills[i]
+		$('#panel #skills').append('<li class="hover" id="particle" data-sid="' + player.skills[i].id + '"><img src="/images/skills/' + player.skills[i].image + '"><span></span><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><line class="top" x1="0" y1="0" x2="900" y2="0"/><line class="left" x1="0" y1="47" x2="0" y2="-920"/><line class="bottom" x1="48" y1="47" x2="-600" y2="47"/><line class="right" x1="48" y1="0" x2="48" y2="1380"/></li>');
 	}
 }
 
@@ -241,15 +234,6 @@ function interfaceUseSkill(skill)
         $('#' + skill)
             .removeClass('hover')
             .addClass('cooldown');
-
-        var s = parseInt(skills[skill].cooldown / 1000);
-        for(var i = s; i >= 0; i--)
-        {
-            setTimeout("interfaceSetSkillCooldown('particle', " + (s - i) + ")", i * 1000);
-        }
-
-        // call cooldown
-        setTimeout("interfaceSkillReloaded('particle')", skills[skill].cooldown);
     }
 }
 
@@ -749,73 +733,73 @@ function object_click()
     // }
 }
 
-function move_object()
-{
-    // convert world position to local position by floor
-    var local_x = parseInt(sceneObjects.player.position.x + (config.floor.width / 2)),
-        local_z = parseInt(sceneObjects.player.position.z + (config.floor.length / 2));
+// function move_object()
+// {
+//     // convert world position to local position by floor
+//     var local_x = parseInt(sceneObjects.player.position.x + (config.floor.width / 2)),
+//         local_z = parseInt(sceneObjects.player.position.z + (config.floor.length / 2));
 
-    // get coordinates on matrix
-    var move_from = getMapClickPosition(local_x, local_z),
-        move_to = getMapClickPosition(sceneObjects.floor.mouse_pos.x, sceneObjects.floor.mouse_pos.z);
+//     // get coordinates on matrix
+//     var move_from = getMapClickPosition(local_x, local_z),
+//         move_to = getMapClickPosition(sceneObjects.floor.mouse_pos.x, sceneObjects.floor.mouse_pos.z);
 
-    // get move path
-    var graph = new Graph(config.map.matrix, {
-        diagonal: true
-    });
-    var start = graph.grid[move_from.row][move_from.column],
-        end = graph.grid[move_to.row][move_to.column],
-        path = astar.search(graph, start, end, {
-            heuristic: astar.heuristics.diagonal
-        });
+//     // get move path
+//     var graph = new Graph(config.map.matrix, {
+//         diagonal: true
+//     });
+//     var start = graph.grid[move_from.row][move_from.column],
+//         end = graph.grid[move_to.row][move_to.column],
+//         path = astar.search(graph, start, end, {
+//             heuristic: astar.heuristics.diagonal
+//         });
 
-    // get move points
-    var points = [];
+//     // get move points
+//     var points = [];
 
-    // add first point as object position
-    points.push(new THREE.Vector3(sceneObjects.player.position.x, config.floor.position.y, sceneObjects.player.position.z));
+//     // add first point as object position
+//     points.push(new THREE.Vector3(sceneObjects.player.position.x, config.floor.position.y, sceneObjects.player.position.z));
 
-    // get size of map col / row in pixels
-    var pixel_size_x = config.floor.width / config.map.cols,
-        pixel_size_z = config.floor.length / config.map.rows;
+//     // get size of map col / row in pixels
+//     var pixel_size_x = config.floor.width / config.map.cols,
+//         pixel_size_z = config.floor.length / config.map.rows;
 
-    // set status move to object
-    sceneObjects.player.isMove = true;
+//     // set status move to object
+//     sceneObjects.player.isMove = true;
 
-    // play sound
-    soundPlay('move', 0, true);
+//     // play sound
+//     soundPlay('move', 0, true);
 
-    // calc points position in pixels
-    for(var p = 0; p < path.length; p++)
-    {
-        var new_x = (path[p].y * pixel_size_x) - (config.floor.width / 2),
-            new_z = (path[p].x * pixel_size_z) - -(config.floor.length / 2) * -1;
-        points.push(new THREE.Vector3(new_x, config.floor.position.y, new_z));
-    }
+//     // calc points position in pixels
+//     for(var p = 0; p < path.length; p++)
+//     {
+//         var new_x = (path[p].y * pixel_size_x) - (config.floor.width / 2),
+//             new_z = (path[p].x * pixel_size_z) - -(config.floor.length / 2) * -1;
+//         points.push(new THREE.Vector3(new_x, config.floor.position.y, new_z));
+//     }
 
-    // add path to object (in pixels)
-    sceneObjects.player.movePath = new THREE.CatmullRomCurve3(points);
+//     // add path to object (in pixels)
+//     sceneObjects.player.movePath = new THREE.CatmullRomCurve3(points);
 
-    // clear old move
-    clrearMoveIntervalsFromObject(sceneObjects.player);
-    sceneObjects.player.moveSetTimeout = [];
+//     // clear old move
+//     clrearMoveIntervalsFromObject(sceneObjects.player);
+//     sceneObjects.player.moveSetTimeout = [];
 
-    // set animation
-    objectAnimationMove(sceneObjects.player, true);
+//     // set animation
+//     objectAnimationMove(sceneObjects.player, true);
 
-    // setup move by points
-    var p;
-    for(p = 0; p < path.length; p++)
-    {
-        var new_x = (path[p].y * pixel_size_x) - (config.floor.width / 2),
-            new_z = (path[p].x * pixel_size_z) - -(config.floor.length / 2) * -1;
-        sceneObjects.player.moveSetTimeout.push(setTimeout('animateObject(sceneObjects.player, ' + new_x + ', ' + new_z + ')', (player.moveSpeed + 10) * p));
-    }
+//     // setup move by points
+//     var p;
+//     for(p = 0; p < path.length; p++)
+//     {
+//         var new_x = (path[p].y * pixel_size_x) - (config.floor.width / 2),
+//             new_z = (path[p].x * pixel_size_z) - -(config.floor.length / 2) * -1;
+//         sceneObjects.player.moveSetTimeout.push(setTimeout('animateObject(sceneObjects.player, ' + new_x + ', ' + new_z + ')', (player.moveSpeed + 10) * p));
+//     }
 
-    sceneObjects.player.moveSetTimeout.push(setTimeout('objectAnimationStay(sceneObjects.player, true)', ((player.moveSpeed + 10) * p) + 50));
+//     sceneObjects.player.moveSetTimeout.push(setTimeout('objectAnimationStay(sceneObjects.player, true)', ((player.moveSpeed + 10) * p) + 50));
 
-    sceneObjects.player.moveSetTimeout.push(setTimeout('soundStop("move")', ((player.moveSpeed + 10) * p) + 50));
-}
+//     sceneObjects.player.moveSetTimeout.push(setTimeout('soundStop("move")', ((player.moveSpeed + 10) * p) + 50));
+// }
 
 function animateObject(object, new_x, new_z)
 {
@@ -838,7 +822,7 @@ function animateObject(object, new_x, new_z)
         },
         offsetX,
         tween = new TWEEN.Tween(move_from)
-            .to(move_to, player.moveSpeed)
+            .to(move_to, 35)
             .onUpdate(function() {
                 object.position.set(this.x, config.floor.position.y, this.z);
                 socket.emit('send position', {
@@ -933,7 +917,6 @@ function objectRotateTo(object, new_x, new_z)
     var radians = Math.acos(up.dot(tangent));
     object.matrix.makeRotationAxis(axis.normalize(), radians);
     object.rotation.setFromRotationMatrix(object.matrix);
-    console.log(object.rotation);
 }
 
 function objectAnimationStay(object, isPublic)
@@ -942,17 +925,17 @@ function objectAnimationStay(object, isPublic)
     object.action.stay.play();
     object.action.move.stop();
 
-    if(isPublic == true)
-    {
-        socket.emit('send position', {
-            name: object.name,
-            position: {
-                x: object.position.x,
-                z: object.position.z
-            },
-            action: 'stay'
-        });
-    }
+    // if(isPublic == true)
+    // {
+    //     socket.emit('send position', {
+    //         name: object.name,
+    //         position: {
+    //             x: object.position.x,
+    //             z: object.position.z
+    //         },
+    //         action: 'stay'
+    //     });
+    // }
 }
 
 function objectAnimationMove(object, isPublic)
@@ -961,17 +944,17 @@ function objectAnimationMove(object, isPublic)
     object.action.stay.stop();
     object.action.move.play();
 
-    if(isPublic == true)
-    {
-        socket.emit('send position', {
-            name: object.name,
-            position: {
-                x: object.position.x,
-                z: object.position.z
-            },
-            action: 'move'
-        });
-    }
+    // if(isPublic == true)
+    // {
+    //     socket.emit('send position', {
+    //         name: object.name,
+    //         position: {
+    //             x: object.position.x,
+    //             z: object.position.z
+    //         },
+    //         action: 'move'
+    //     });
+    // }
 }
 
 function clrearMoveIntervalsFromObject(object)
@@ -1026,61 +1009,15 @@ function screenMove()
 
 function useSkill(object, targetPosition, isPlayer)
 {
-
-    // if current player and skill is avaliable
-    if(isPlayer == true && $('#particle').hasClass('active') == false)
-    {
-        return false;
-    }
-
-    console.log('useSkill');
-
-    // calc end position
-    var Rab = Math.sqrt(Math.pow((targetPosition.world_x - object.position.x), 2)  + Math.pow((targetPosition.world_z - object.position.z), 2));
-    var k = object.skills.particle.maxDistance / Rab;
-    targetPosition.world_x = object.position.x + (targetPosition.world_x - object.position.x) * k;
-    targetPosition.world_z = object.position.z + (targetPosition.world_z - object.position.z) * k;
-
-    // rotate player to target
-    objectRotateTo(object, targetPosition.world_x, targetPosition.world_z)
-
-    if(object.skills.particle.isRun == true)
-    {
-        // skill is busy
-        return;
-    }
-
-    // set start position
-    object.skills.particle.options.position.x = object.position.x;
-    object.skills.particle.options.position.y = object.position.y + 5;
-    object.skills.particle.options.position.z = object.position.z;
-    object.skills.particle.isRun = true;
-
-    // start animation
-    runTween(object.skills.particle.options, {
-        x: targetPosition.world_x,
-        y: object.skills.particle.options.position.y,
-        z: targetPosition.world_z
-    }, object.skills.particle.speed, true, calbackSkillParticle, object);
-
-    // start sound
-    soundSetVolumeByDistance('particle', object);
-    soundPlay('particle');
-
-    if(isPlayer == true)
-    {
-        // call interface
-        interfaceUseSkill('particle');
-
-        // send to server
-        socket.emit('use skill', {
-            name: object.name,
-            targetPosition: {
-                world_x: targetPosition.world_x,
-                world_z: targetPosition.world_z
-            }
-        });
-    }
+	socket.emit('use skill', {
+	 	id: $('#skills .active').attr('data-sid'),
+	 	targetPosition: {
+	 		x: targetPosition.x,
+	 		z: targetPosition.z,
+	 		world_x: targetPosition.world_x,
+	 		world_z: targetPosition.world_z
+	 	}
+    });
 }
 
 function calbackSkillParticle(object)

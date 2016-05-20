@@ -7,7 +7,8 @@ module.exports = {
 	action: action,
 	getPlayers: getPlayers,
 	getPlayerBySocketId: getPlayerBySocketId,
-	setPlayerProperties: setPlayerProperties
+	setPlayerProperties: setPlayerProperties,
+	setPlayerSkillProperties: setPlayerSkillProperties
 };
 
 // load up the game model
@@ -55,6 +56,11 @@ function setPlayerProperties(socket_id, param, value)
 	{
 		PlayersData[PlayersSocketToId[socket_id]][pr[0]][pr[1]][pr[2]] = value;
 	}
+}
+
+function setPlayerSkillProperties(socket_id, skillIndex, param, value)
+{
+	PlayersData[PlayersSocketToId[socket_id]].skills[skillIndex][param] = value;
 }
 
 // load all skills info
@@ -201,6 +207,8 @@ function playerSkillsInit(socket, user, isUpdate)
 	sql += " WHERE 1=1";
 	sql += " AND STU.user_id = ?";
 
+	var skill = [];
+
 	connection.query(sql, [user.user_id], function(err, rows){
 	    if(err)
 	    {
@@ -212,7 +220,9 @@ function playerSkillsInit(socket, user, isUpdate)
 		PlayersData[user.user_id].skills = [];
 		for (var i = 0; i < rows.length; i++)
 		{
-			PlayersData[user.user_id].skills.push(rows[i]);
+			skill = rows[i];
+			skill.isRecovering = false;
+			PlayersData[user.user_id].skills.push(skill);
 		}
 
 		if(isUpdate == true)

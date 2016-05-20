@@ -50,12 +50,43 @@ function loopGameActionsInit(io)
 					io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
 						id: TASKS[i].socket_id,
 						animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
+						speed: 35,
 						position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
 					});
 
 					// remove curent position
 				    TASKS[i].path.splice(0, 1);
 					break;
+
+				case 'skillCooldown':
+					// calc time left
+					var timeLeft = parseInt(TASKS[i].colldown - (new Date().getTime() - TASKS[i].useTime));
+
+					if(timeLeft < 0)
+					{
+						// send skill cooldown to socket
+						io.sockets.connected[TASKS[i].socket_id].emit('skill cooldown', {
+							id: TASKS[i].socket_id,
+							skill_id: TASKS[i].skill_id,
+							time: -1
+						});
+
+						// set recovering
+						core.setPlayerSkillProperties(TASKS[i].socket_id, TASKS[i].skillIndex, 'isRecovering', false);
+
+						// remove task
+						TASKS.splice(i, 1);
+						continue;
+					}
+
+					// send skill cooldown to socket
+					io.sockets.connected[TASKS[i].socket_id].emit('skill cooldown', {
+						id: TASKS[i].socket_id,
+						skill_id: TASKS[i].skill_id,
+						time: parseInt(timeLeft / 1000)
+					});
+					break;
+
 				default: console.log('*** loop action "' + TASKS[i].action + '" not found!');
 			}
 		}
@@ -118,6 +149,29 @@ function eventsInit(io, socket)
 		}
 		console.log('click on:', object.name, socket.id);
 	});
+
+	/**
+	 * use skill
+	 */
+	socket.on('use skill', function(data){
+		// get player
+		var player = core.getPlayerBySocketId(socket.id);
+
+		// find skill
+		for(var i = 0; i < player.skills.length; i++)
+		{
+			if(player.skills[i].id == data.id)
+			{
+				// check cooldown
+				if(player.skills[i].isRecovering == false)
+				{
+					// use skill
+					sceneUseSkill(socket, player, i, data);
+				}
+				break;
+			}
+		}
+	});
 }
 
 function sceneMovePlayer(socket, targetData)
@@ -161,6 +215,61 @@ function sceneMovePlayer(socket, targetData)
 
     // add to loop function
     TASKS.push(moveTask);
+}
+
+function sceneUseSkill(socket, player, skillIndex, data)
+{
+	var endPosition = player.position,
+		cooldownTask;
+
+	switch(parseInt(data.id))
+	{
+		case 1:
+			// distance skill
+			console.log('use distance skill, id:', data.id);
+			endPosition = useSkillDistance(player, skillIndex, data);
+			break;
+		default:
+			console.log('> use undefined skill, id', data.id);
+			return false;
+	}
+
+	// set recovering
+	core.setPlayerSkillProperties(socket.id, skillIndex, 'isRecovering', true);
+
+	// send callback
+	socket.emit('use skill', {
+		id: socket.id,
+		startPosition: player.position,
+		endPosition: endPosition
+	});
+
+	// set task
+	cooldownTask = {
+		action: 'skillCooldown',
+		socket_id: socket.id,
+		skill_id: player.skills[skillIndex].id,
+		colldown:  player.skills[skillIndex].cooldown,
+		skillIndex:  skillIndex,
+		useTime: new Date().getTime()
+	};
+
+	// add to loop function
+    TASKS.push(cooldownTask);
+}
+
+function useSkillDistance(player, skillIndex, data)
+{
+	// calc end position
+    var Rab = Math.sqrt(Math.pow((data.targetPosition.world_x - player.position.x), 2)  + Math.pow((data.targetPosition.world_z - player.position.z), 2));
+    var k = player.skills[skillIndex].distance / Rab;
+    data.targetPosition.world_x = player.position.x + (data.targetPosition.world_x - player.position.x) * k;
+    data.targetPosition.world_z = player.position.z + (data.targetPosition.world_z - player.position.z) * k;
+
+    return {
+    	world_x: data.targetPosition.world_x,
+    	world_z: data.targetPosition.world_z
+    };
 }
 
 /**
