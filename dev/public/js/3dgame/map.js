@@ -131,18 +131,8 @@ socket.on('use skill', function(data){
     // rotate player to target
     objectRotateTo(opponents[data.id], data.endPosition.world_x, data.endPosition.world_z)
 
-    // set start position
-    opponents[data.id].skills.particle.options.position.x = data.startPosition.x;
-    opponents[data.id].skills.particle.options.position.y = data.startPosition.y + 5;
-    opponents[data.id].skills.particle.options.position.z = data.startPosition.z;
+    // enable particle skill
     opponents[data.id].skills.particle.isRun = true;
-
-    // start animation
-    runTween(opponents[data.id].skills.particle.options, {
-        x: data.endPosition.world_x,
-        y: opponents[data.id].skills.particle.options.position.y,
-        z: data.endPosition.world_z
-    }, opponents[data.id].skills.particle.speed, true, calbackSkillParticle, opponents[data.id]);
 
     // start sound
     soundSetVolumeByDistance('particle', opponents[data.id]);
@@ -153,6 +143,33 @@ socket.on('use skill', function(data){
     	// call interface
         interfaceUseSkill('particle');
     }
+});
+
+socket.on('skill animate', function(data){
+    if(data.action == 'end')
+	{
+		calbackSkillParticle(opponents[data.id]);
+
+		if(data.sound == 'collision')
+		{
+			// play collision tune
+        	soundPlay('particle_collision');
+		}
+
+		return false;
+	}
+
+    // set start position
+    opponents[data.id].skills.particle.options.position.x = data.positionLast.world_x;
+    opponents[data.id].skills.particle.options.position.y = data.positionLast.world_y;
+    opponents[data.id].skills.particle.options.position.z = data.positionLast.world_z;
+
+    // start animation
+    runTween(opponents[data.id].skills.particle.options, {
+        x: data.positionEnd.world_x,
+        y: data.positionEnd.world_y,
+        z: data.positionEnd.world_z
+    }, data.speed, false);
 });
 
 socket.on('skill cooldown', function(data){
@@ -168,6 +185,10 @@ socket.on('skill cooldown', function(data){
 	}
 });
 
+socket.on('set health to player', function(data){
+    // set health
+    interfaceSetHealth(opponents[data.id].uuid, data.health);
+});
 
 socket.on('opponent disconnected', function(id){
     console.log('player id: ' + id + ' disconnected');
@@ -528,59 +549,6 @@ function loadSoundFile(audioFile, methodName)
     });
 }
 
-// function show_grid()
-// {
-//     // create object - cube
-//     var geometry = new THREE.CubeGeometry(config.floor.width, 10, config.floor.length, config.map.cols, 1, config.map.rows);
-//     var material = new THREE.MeshPhongMaterial({
-//         color: 0xff0000,
-//         wireframe: true
-//     });
-//     var mesh = new THREE.Mesh(geometry, material);
-//     mesh.position.set(0, 0, 0);
-
-//     mesh.name = "Grid";
-//     mesh.callback = object_click;
-//     mesh.position.set(0, config.floor.position.y, 0);
-//     sceneObjects.cube = mesh;
-//     scene.add(mesh);
-// }
-
-// function add_frames()
-// {
-//     // create objects
-//     var material = new THREE.MeshPhongMaterial({
-//         color: 0xffffff
-//     });
-//     var geometry = new THREE.CubeGeometry(10, 5, 10, 1, 1, 1);
-//     var cube = new THREE.Mesh(geometry, material);
-//     cube.name = "default";
-//     cube.collision = true;
-//     cube.callback = object_click;
-//     cube.position.set(-500, 0, 0);
-//     cube.castShadow = config.light.frameCastShadow;
-//     cube.receiveShadow = config.light.frameCastShadow;
-//     var check_positions;
-
-//     for(var y = 1; y < config.map.matrix.length - 1; y++)
-//     {
-//         for(var x = 1; x < config.map.matrix[0].length - 1; x++)
-//         {
-//             if(config.map.matrix[y][x] == 0)
-//             {
-//                 check_positions = getMapPositionToPixels(y, x);
-//                 var clone = cube.clone();
-//                 clone.name = 'frame_' + y + '_' + x;
-//                 clone.position.set(check_positions.x + 5, config.floor.position.y, check_positions.z + 5);
-//                 clone.callback = object_click;
-//                 sceneObjects['frame_' + y + '_' + x] = clone;
-//                 sceneCollisionObjects.push(clone);
-//                 scene.add(clone);
-//             }
-//         }
-//     }
-// }
-
 function _create_decor(i)
 {
 	loaderObjectFromJS.load(decor[i].model, function (geometry, materials){
@@ -718,7 +686,6 @@ function pingOtherObjectsForPlayer()
 
 function object_click()
 {
-    console.log('click on ', this.name);
     socket.emit('click on object', {
     	name: this.name,
     	mouse_pos: {
@@ -726,80 +693,7 @@ function object_click()
     		z: sceneObjects.floor.mouse_pos.z
     	}
     });
-    // if(this.name == 'Floor')
-    // {
-    //     // console.log('click position: ', this.mouse_pos);
-    //     move_object();
-    // }
 }
-
-// function move_object()
-// {
-//     // convert world position to local position by floor
-//     var local_x = parseInt(sceneObjects.player.position.x + (config.floor.width / 2)),
-//         local_z = parseInt(sceneObjects.player.position.z + (config.floor.length / 2));
-
-//     // get coordinates on matrix
-//     var move_from = getMapClickPosition(local_x, local_z),
-//         move_to = getMapClickPosition(sceneObjects.floor.mouse_pos.x, sceneObjects.floor.mouse_pos.z);
-
-//     // get move path
-//     var graph = new Graph(config.map.matrix, {
-//         diagonal: true
-//     });
-//     var start = graph.grid[move_from.row][move_from.column],
-//         end = graph.grid[move_to.row][move_to.column],
-//         path = astar.search(graph, start, end, {
-//             heuristic: astar.heuristics.diagonal
-//         });
-
-//     // get move points
-//     var points = [];
-
-//     // add first point as object position
-//     points.push(new THREE.Vector3(sceneObjects.player.position.x, config.floor.position.y, sceneObjects.player.position.z));
-
-//     // get size of map col / row in pixels
-//     var pixel_size_x = config.floor.width / config.map.cols,
-//         pixel_size_z = config.floor.length / config.map.rows;
-
-//     // set status move to object
-//     sceneObjects.player.isMove = true;
-
-//     // play sound
-//     soundPlay('move', 0, true);
-
-//     // calc points position in pixels
-//     for(var p = 0; p < path.length; p++)
-//     {
-//         var new_x = (path[p].y * pixel_size_x) - (config.floor.width / 2),
-//             new_z = (path[p].x * pixel_size_z) - -(config.floor.length / 2) * -1;
-//         points.push(new THREE.Vector3(new_x, config.floor.position.y, new_z));
-//     }
-
-//     // add path to object (in pixels)
-//     sceneObjects.player.movePath = new THREE.CatmullRomCurve3(points);
-
-//     // clear old move
-//     clrearMoveIntervalsFromObject(sceneObjects.player);
-//     sceneObjects.player.moveSetTimeout = [];
-
-//     // set animation
-//     objectAnimationMove(sceneObjects.player, true);
-
-//     // setup move by points
-//     var p;
-//     for(p = 0; p < path.length; p++)
-//     {
-//         var new_x = (path[p].y * pixel_size_x) - (config.floor.width / 2),
-//             new_z = (path[p].x * pixel_size_z) - -(config.floor.length / 2) * -1;
-//         sceneObjects.player.moveSetTimeout.push(setTimeout('animateObject(sceneObjects.player, ' + new_x + ', ' + new_z + ')', (player.moveSpeed + 10) * p));
-//     }
-
-//     sceneObjects.player.moveSetTimeout.push(setTimeout('objectAnimationStay(sceneObjects.player, true)', ((player.moveSpeed + 10) * p) + 50));
-
-//     sceneObjects.player.moveSetTimeout.push(setTimeout('soundStop("move")', ((player.moveSpeed + 10) * p) + 50));
-// }
 
 function animateObject(object, new_x, new_z)
 {
@@ -1027,22 +921,6 @@ function calbackSkillParticle(object)
 
     // stop sound
     soundStop('particle');
-
-    if(typeof object.isCollision !== 'undefined' && object.isCollision === true)
-    {
-        // play collision tune
-        soundPlay('particle_collision');
-
-        // get collision object
-        console.log(object.collisionObjects[0].object);
-
-        // set health
-        interfaceSetHealth(object.collisionObjects[0].object.uuid, 75);
-
-        // clear
-        object.isCollision = false;
-        object.collisionObjects = null;
-    }
 }
 
 function getClickPosition(e)

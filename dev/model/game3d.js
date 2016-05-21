@@ -7,6 +7,7 @@ module.exports = {
 	action: action,
 	getPlayers: getPlayers,
 	getPlayerBySocketId: getPlayerBySocketId,
+	getSocketIdByUserId: getSocketIdByUserId,
 	setPlayerProperties: setPlayerProperties,
 	setPlayerSkillProperties: setPlayerSkillProperties
 };

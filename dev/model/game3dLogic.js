@@ -80,11 +80,82 @@ function loopGameActionsInit(io)
 					}
 
 					// send skill cooldown to socket
-					io.sockets.connected[TASKS[i].socket_id].emit('skill cooldown', {
+					emit(io, TASKS[i].socket_id, 'skill cooldown', {
 						id: TASKS[i].socket_id,
 						skill_id: TASKS[i].skill_id,
 						time: parseInt(timeLeft / 1000)
 					});
+					break;
+
+				case 'skillAnimate':
+					// calc time passed
+					var timePassed = parseInt(new Date().getTime() - TASKS[i].useTime);
+
+					if(timePassed >= TASKS[i].active_time)
+					{
+						// send skill animate to socket
+						io.sockets.connected[TASKS[i].socket_id].emit('skill animate', {
+							id: TASKS[i].socket_id,
+							skill_id: TASKS[i].skill_id,
+							sound: TASKS[i].soundAction,
+							action: 'end'
+						});
+
+						// remove task
+						TASKS.splice(i, 1);
+						continue;
+					}
+
+					// calc distance
+					var distance = timePassed * TASKS[i].move_step_by_millisecond;
+
+					// calc position
+				    var Rab = Math.sqrt(Math.pow((TASKS[i].end_point.world_x - TASKS[i].start_point.x), 2)  + Math.pow((TASKS[i].end_point.world_z - TASKS[i].start_point.z), 2));
+				    var k = distance / Rab;
+
+				    // new position
+				    var positionEnd = {
+					    world_x: TASKS[i].start_point.x + (TASKS[i].end_point.world_x - TASKS[i].start_point.x) * k,
+						world_y: -230,
+						world_z: TASKS[i].start_point.z + (TASKS[i].end_point.world_z - TASKS[i].start_point.z) * k
+					}
+
+					if(typeof TASKS[i].positionLast == 'undefined')
+					{
+						TASKS[i].positionLast = {
+							world_x: TASKS[i].start_point.x,
+							world_y: -230,
+							world_z: TASKS[i].start_point.z
+						};
+					}
+
+					// check collision with opponents
+					var collision = checkCollisionWithPlayers({
+						x: positionEnd.world_x,
+						y: positionEnd.world_y,
+						z: positionEnd.world_z
+					}, core.getPlayerBySocketId(TASKS[i].socket_id).character.user_id);
+
+					if(collision.length > 0)
+					{
+						// stop skill animate
+						TASKS[i].useTime -= 9999999;
+						TASKS[i].soundAction = 'collision';
+						continue;
+					}
+
+					// send skill animate to socket
+					io.sockets.connected[TASKS[i].socket_id].emit('skill animate', {
+						id: TASKS[i].socket_id,
+						skill_id: TASKS[i].skill_id,
+						action: 'animate',
+						positionLast: TASKS[i].positionLast,
+						positionEnd: positionEnd,
+						speed: 35
+					});
+
+					// save last point
+					TASKS[i].positionLast = positionEnd;
 					break;
 
 				default: console.log('*** loop action "' + TASKS[i].action + '" not found!');
@@ -219,32 +290,35 @@ function sceneMovePlayer(socket, targetData)
 
 function sceneUseSkill(socket, player, skillIndex, data)
 {
-	var endPosition = player.position,
-		cooldownTask;
-
 	switch(parseInt(data.id))
 	{
 		case 1:
 			// distance skill
 			console.log('use distance skill, id:', data.id);
-			endPosition = useSkillDistance(player, skillIndex, data);
+			useSkillDistance(socket, player, skillIndex, data);
 			break;
 		default:
 			console.log('> use undefined skill, id', data.id);
 			return false;
 	}
+}
 
-	// set recovering
+function useSkillDistance(socket, player, skillIndex, data)
+{
+	var cooldownTask,
+		animateTask,
+		moveStepByMillisecond = player.skills[skillIndex].distance / player.skills[skillIndex].active_time;
+
+    // set recovering
 	core.setPlayerSkillProperties(socket.id, skillIndex, 'isRecovering', true);
 
 	// send callback
 	socket.emit('use skill', {
 		id: socket.id,
-		startPosition: player.position,
-		endPosition: endPosition
+		endPosition: data.targetPosition
 	});
 
-	// set task
+	// set tasks
 	cooldownTask = {
 		action: 'skillCooldown',
 		socket_id: socket.id,
@@ -253,23 +327,53 @@ function sceneUseSkill(socket, player, skillIndex, data)
 		skillIndex:  skillIndex,
 		useTime: new Date().getTime()
 	};
+	animateTask = {
+		action: 'skillAnimate',
+		socket_id: socket.id,
+		skill_id: player.skills[skillIndex].id,
+		start_point: {
+			x: player.position.x,
+			y: player.position.y,
+			z: player.position.z
+		},
+		end_point:  data.targetPosition,
+		active_time:  player.skills[skillIndex].active_time,
+		move_step_by_millisecond:  moveStepByMillisecond,
+		useTime: new Date().getTime()
+	};
 
 	// add to loop function
     TASKS.push(cooldownTask);
+    TASKS.push(animateTask);
 }
 
-function useSkillDistance(player, skillIndex, data)
+function checkCollisionWithPlayers(position, exclude_id)
 {
-	// calc end position
-    var Rab = Math.sqrt(Math.pow((data.targetPosition.world_x - player.position.x), 2)  + Math.pow((data.targetPosition.world_z - player.position.z), 2));
-    var k = player.skills[skillIndex].distance / Rab;
-    data.targetPosition.world_x = player.position.x + (data.targetPosition.world_x - player.position.x) * k;
-    data.targetPosition.world_z = player.position.z + (data.targetPosition.world_z - player.position.z) * k;
+	var players = core.getPlayers(),
+		collisions = [];
 
-    return {
-    	world_x: data.targetPosition.world_x,
-    	world_z: data.targetPosition.world_z
-    };
+	Object.keys(players.PlayersData).forEach(function(user_id){
+		if(user_id != exclude_id && checkDistanceBetweenPoints(position, players.PlayersData[user_id].position) <= 50)
+		{
+			// collision with player
+			collisions.push({
+				id: user_id
+			});
+		}
+    });
+
+    return collisions;
+}
+
+/**
+ * get distance between points
+ * @param  {[type]} position_1
+ * @param  {[type]} position_2
+ * @return {[type]}
+ */
+function checkDistanceBetweenPoints(position_1, position_2)
+{
+    return Math.sqrt(Math.pow(position_2.x - position_1.x, 2) + Math.pow(position_2.z - position_1.z, 2));
 }
 
 /**
@@ -298,6 +402,14 @@ function getMapPositionToPixels(row, column)
         x: (column * (config.scene.floor.width / config.scene.map.matrix[0].length)) - config.scene.floor.width / 2,
         z: (row * ((config.scene.floor.length / config.scene.map.matrix.length)) + -(config.scene.floor.length / 2))
     };
+}
+
+function emit(io, socket_id, event_name, data)
+{
+	if(typeof io.sockets.connected[socket_id] != 'undefined')
+	{
+		io.sockets.connected[socket_id].emit(event_name, data);
+	}
 }
 
 function error(name, err, socket)
