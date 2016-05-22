@@ -109,6 +109,11 @@ function playerShowStatistics()
 	// name
 	$('#ch-name').text(user.character.name);
 
+	// show avatar
+	$('#ch-avatar').attr({
+		src: '/images/characters/' + user.character.avatar
+	}).removeClass('hidden');
+
 	// stats
 	var el = $('#ch-statistics');
 	el.text('');

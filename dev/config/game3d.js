@@ -61,7 +61,9 @@ module.exports = {
     },
 
     player: {
-        defaultSpeed: 5
+        defaultSpeed: 5,
+        health: 300,
+        energi: 120
     },
 
     audioFiles: {

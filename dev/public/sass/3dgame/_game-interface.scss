@@ -26,7 +26,7 @@ canvas {
     margin: 0;
     border-radius: 10px 10px 0 0;
 
-    & ul{
+    & ul.skills{
         margin: 0;
         padding: 0;
 
@@ -119,6 +119,71 @@ canvas {
     			}
     		}
     	}
+    }
+}
+
+.chaaracterInfo{
+    position: fixed;
+    top: 15px;
+    left: 15px;
+
+    & .avatar{
+        display: inline-block;
+        width: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        padding: 5px;
+        margin: 0 10px 0 0;
+        background: rgba(0,0,0,.5);
+        cursor: pointer;
+    }
+
+    & .name{
+        color: #00ff00;
+        margin: 10px 0;
+        text-shadow: 0 0 5px #000000;
+        position: absolute;
+        top: 0;
+        left: 90px;
+    }
+
+    & .health-box{
+        border: 1px solid #00ff00;
+        border-radius: 10px;
+        background: rgba(0,0,0,.5);
+        overflow: hidden;
+        width: 150px;
+        height: 7px;
+        position: absolute;
+        top: 35px;
+        left: 90px;
+
+        & .health{
+            transition: 0.4s;
+            width: 0;
+            height: 3px;
+            margin: 1px;
+        }
+    }
+
+    & .energi-box{
+        border: 1px solid #009CFF;
+        border-radius: 10px;
+        background: rgba(0,0,0,.5);
+        overflow: hidden;
+        width: 100px;
+        height: 7px;
+        position: absolute;
+        top: 45px;
+        left: 90px;
+
+        & .energi{
+            transition: 0.4s;
+            background: #009CFF;
+            width: 0;
+            height: 3px;
+            margin: 1px;
+        }
     }
 }
 

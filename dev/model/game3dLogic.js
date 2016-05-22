@@ -195,6 +195,10 @@ function eventsInit(io, socket)
 			core.setPlayerProperties(socket.id, 'position', {x: 0, y: config.scene.floor.position.y, z: 0});
 			core.setPlayerProperties(socket.id, 'moveSpeed', config.player.defaultSpeed);
 			core.setPlayerProperties(socket.id, 'character.model', 'threeObjects/butterfly_low.js');
+			core.setPlayerProperties(socket.id, 'character.health', config.player.health);
+			core.setPlayerProperties(socket.id, 'character.maxHealth', config.player.health);
+			core.setPlayerProperties(socket.id, 'character.energi', config.player.energi);
+			core.setPlayerProperties(socket.id, 'character.maxEnergi', config.player.energi);
 		}
 
 		// send data to user

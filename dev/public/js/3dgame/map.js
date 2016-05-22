@@ -187,7 +187,12 @@ socket.on('skill cooldown', function(data){
 
 socket.on('set health to player', function(data){
     // set health
-    interfaceSetHealth(opponents[data.id].uuid, data.health);
+    player.character.health = data.health;
+});
+
+socket.on('set energi to player', function(data){
+    // set health
+    player.character.energi = data.energi;
 });
 
 socket.on('opponent disconnected', function(id){
@@ -217,7 +222,10 @@ function interface_init()
 	// create panel of skills
 	interfaceCreateSkillsPanel();
 
-    $('#panel').click(function(e) {
+	// show information of character
+	interfaceShowCharacterInfo();
+
+    $('.interface-element').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
     });
@@ -244,6 +252,19 @@ function interfaceCreateSkillsPanel()
 	{
 		$('#panel #skills').append('<li class="hover" id="particle" data-sid="' + player.skills[i].id + '"><img src="/images/skills/' + player.skills[i].image + '"><span></span><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><line class="top" x1="0" y1="0" x2="900" y2="0"/><line class="left" x1="0" y1="47" x2="0" y2="-920"/><line class="bottom" x1="48" y1="47" x2="-600" y2="47"/><line class="right" x1="48" y1="0" x2="48" y2="1380"/></li>');
 	}
+}
+
+function interfaceShowCharacterInfo()
+{
+	$('#chaaracterInfo').append('<span class="avatar"><img src="/images/characters/' + player.character.avatar + '" width="100%"></span>')
+		.append('<span class="name">' + player.character.name + '</span>')
+		.append('<div class="health-box"><div class="health"></div></div>')
+		.append('<div class="energi-box"><div class="energi"></div></div>');
+
+	$('#chaaracterInfo .avatar').click(function(e){
+		e.preventDefault();
+		cameraMoveToPlayer();
+	});
 }
 
 function interfaceUseSkill(skill)
@@ -300,10 +321,19 @@ function interfaceShowObjectTitle(id, title, x, y)
 function interfaceSetHealth(id, percent)
 {
     var el = document.getElementById(id);
+    var el2 = document.getElementById('chaaracterInfo');
+
     if(el)
     {
         el.getElementsByClassName('health')[0].style.width = percent + '%';
+        el2.getElementsByClassName('health')[0].style.width = percent + '%';
     }
+}
+
+function interfaceSetEnergi(id, percent)
+{
+    var el = document.getElementById('chaaracterInfo');
+    el.getElementsByClassName('energi')[0].style.width = percent + '%';
 }
 
 
@@ -591,7 +621,7 @@ function show_statistics()
     // show FPS and etc. statistics
     stats = new Stats();
     stats.domElement.style.position = 'absolute';
-    stats.domElement.style.top = '10%';
+    stats.domElement.style.top = '30%';
     stats.domElement.style.zIndex = 100;
     $('#frame').append(stats.domElement);
 }
@@ -646,6 +676,8 @@ function update()
 
     pingOtherObjectsForPlayer();
 
+    showCharactersInfo();
+
     // screen move
     if(isScreenMove === true)
         screenMove();
@@ -680,8 +712,22 @@ function pingOtherObjectsForPlayer()
         {
             var screen_position = toScreenPosition(opponents[key], camera);
             interfaceShowObjectTitle(opponents[key].uuid, opponents[key].name, screen_position.x, screen_position.y);
+
+        	// set info
+            interfaceSetHealth(opponents[key].uuid, ((player.character.health * 100) / player.character.maxHealth));
+            interfaceSetEnergi(opponents[key].uuid, ((player.character.energi * 100) / player.character.maxEnergi));
         }
     });
+}
+
+function showCharactersInfo()
+{
+	if(typeof opponents['/#' + socket.id] !== 'undefined' && opponents['/#' + socket.id] != null && opponents['/#' + socket.id] != 'loading')
+	{
+	    // set info
+	    interfaceSetHealth(opponents['/#' + socket.id].uuid, ((player.character.health * 100) / player.character.maxHealth));
+	    interfaceSetEnergi(opponents['/#' + socket.id].uuid, ((player.character.energi * 100) / player.character.maxEnergi));
+	}
 }
 
 function object_click()
@@ -730,17 +776,6 @@ function animateObject(object, new_x, new_z)
                     },
                     action: 'move'
                 });
-                // if(checkContactWithObjects(object, this.x, config.floor.position.y, this.z) === true)
-                // {
-                //     // console.log(this.x, this.y);
-                //     object.position.set(this.x, config.floor.position.y, this.z);
-                // }
-                // else
-                // {
-                //     object.isMove = false;
-                //     clrearMoveIntervalsFromObject(object);
-                //     tween.stop();
-                // }
             })
             .start()
             .onComplete(function(){
@@ -818,18 +853,6 @@ function objectAnimationStay(object, isPublic)
     object.action.status = 'stay';
     object.action.stay.play();
     object.action.move.stop();
-
-    // if(isPublic == true)
-    // {
-    //     socket.emit('send position', {
-    //         name: object.name,
-    //         position: {
-    //             x: object.position.x,
-    //             z: object.position.z
-    //         },
-    //         action: 'stay'
-    //     });
-    // }
 }
 
 function objectAnimationMove(object, isPublic)
@@ -837,18 +860,6 @@ function objectAnimationMove(object, isPublic)
     object.action.status = 'move';
     object.action.stay.stop();
     object.action.move.play();
-
-    // if(isPublic == true)
-    // {
-    //     socket.emit('send position', {
-    //         name: object.name,
-    //         position: {
-    //             x: object.position.x,
-    //             z: object.position.z
-    //         },
-    //         action: 'move'
-    //     });
-    // }
 }
 
 function clrearMoveIntervalsFromObject(object)
@@ -899,6 +910,15 @@ function screenMove()
             cameraTarget.position.z -= config.camera.controls.moveSpeed;
         }
     }
+}
+
+function cameraMoveToPlayer()
+{
+	cameraTarget.position.x = opponents['/#' + socket.id].position.x;
+	cameraTarget.position.z = opponents['/#' + socket.id].position.z;
+
+	cameraPosition.position.x = opponents['/#' + socket.id].position.x;
+	cameraPosition.position.z = opponents['/#' + socket.id].position.z + 100;
 }
 
 function useSkill(object, targetPosition, isPlayer)
@@ -1184,23 +1204,14 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
             move: mesh.mixer.clipAction(geometry.animations[1], null)
         };
 
-        if(objectType == socket.id)
+        if(objectType == '/#' + socket.id)
         {
         	// curent user
-            sceneObjects.player = mesh;
+            // sceneObjects.player = mesh;
             scene.add(mesh);
 
-            spotLight.target = sceneObjects.player;
-            opponents[objectType] = sceneObjects.player;
-
-            socket.emit('send position', {
-                name: sceneObjects.player.name,
-                position: {
-                    x: sceneObjects.player.position.x,
-                    z: sceneObjects.player.position.z
-                },
-                action: 'stay'
-            });
+            spotLight.target = mesh;
+            opponents[objectType] = mesh;
         }
         else
         {
