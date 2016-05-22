@@ -50,7 +50,7 @@ function loopGameActionsInit(io)
 					io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
 						id: TASKS[i].socket_id,
 						animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
-						speed: 35,
+						speed: config.system.updateRate,
 						position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
 					});
 
@@ -151,7 +151,7 @@ function loopGameActionsInit(io)
 						action: 'animate',
 						positionLast: TASKS[i].positionLast,
 						positionEnd: positionEnd,
-						speed: 35
+						speed: config.system.updateRate
 					});
 
 					// save last point
@@ -162,7 +162,7 @@ function loopGameActionsInit(io)
 			}
 		}
 
-	}, 35);
+	}, config.system.updateRate);
 }
 
 /**

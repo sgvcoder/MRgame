@@ -1,6 +1,10 @@
 // config/game3d.js
 module.exports = {
 
+    system: {
+        updateRate: 35
+    },
+
     scene: {
         debug: {
             enabled: true
