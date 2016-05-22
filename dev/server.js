@@ -21,8 +21,7 @@ var middlewareSocket = require(__dirname + '/middleware/socket')(io),
 
 var socketPublicEvents = require(__dirname + '/socketPublic')(ioPublic);
 
-// http.listen(9000, "192.168.0.106", function(){
-http.listen(9000, "192.168.0.106", function(){
+http.listen(9000, "192.168.0.101", function(){
 	console.log('listening on *:9000');
 });
 

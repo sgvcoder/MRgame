@@ -2,7 +2,7 @@
 module.exports = {
 
     system: {
-        updateRate: 35
+        updateRate: 100 // 35 = ~28 FPS
     },
 
     scene: {

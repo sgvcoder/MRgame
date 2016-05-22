@@ -10,10 +10,16 @@ module.exports = {
 var config = require('../config/game3d.js');
 
 var astar = require('./astar.js'),
-	core = require('./game3d.js');
+	core = require('./game3d.js'),
+	bots = require('./game3dBots.js');
 
 // init loop tasks
-var TASKS = [];
+var TASKS = [],
+	ROOMS = {
+		room_id: {
+			bots: {}
+		}
+	};
 
 // calc length of cell
 var cellLength = parseInt(config.scene.floor.width / config.scene.map.matrix.length);
@@ -36,23 +42,47 @@ function loopGameActionsInit(io)
 				case 'move':
 					if(TASKS[i].path.length == 0)
 					{
+
+					    if(TASKS[i].socket_id == 'bot_1')
+					    {
+					    	sceneWalkBot();
+					    }
+
 						// remove task if steps out
 					    TASKS.splice(i, 1);
+
 						continue;
 					}
 
-					// set postition to user
-					core.setPlayerProperties(TASKS[i].socket_id, 'position.x', TASKS[i].path[0].x);
-					core.setPlayerProperties(TASKS[i].socket_id, 'position.y', TASKS[i].path[0].y);
-					core.setPlayerProperties(TASKS[i].socket_id, 'position.z', TASKS[i].path[0].z);
-
 					// send position to socket
-					io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
-						id: TASKS[i].socket_id,
-						animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
-						speed: config.system.updateRate,
-						position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
-					});
+					if(TASKS[i].socket_id == 'bot_1')
+					{
+						// set postition to user
+						ROOMS.room_id.bots['bot_1'].position.x = TASKS[i].path[0].x;
+						ROOMS.room_id.bots['bot_1'].position.y = TASKS[i].path[0].y;
+						ROOMS.room_id.bots['bot_1'].position.z = TASKS[i].path[0].z;
+
+						io.emit('new player data', {
+							id: TASKS[i].socket_id,
+							animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
+							speed: config.system.updateRate,
+							position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
+						});
+					}
+					else
+					{
+						// set postition to bot
+						core.setPlayerProperties(TASKS[i].socket_id, 'position.x', TASKS[i].path[0].x);
+						core.setPlayerProperties(TASKS[i].socket_id, 'position.y', TASKS[i].path[0].y);
+						core.setPlayerProperties(TASKS[i].socket_id, 'position.z', TASKS[i].path[0].z);
+
+						io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
+							id: TASKS[i].socket_id,
+							animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
+							speed: config.system.updateRate,
+							position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
+						});
+					}
 
 					// remove curent position
 				    TASKS[i].path.splice(0, 1);
@@ -116,7 +146,7 @@ function loopGameActionsInit(io)
 				    // new position
 				    var positionEnd = {
 					    world_x: TASKS[i].start_point.x + (TASKS[i].end_point.world_x - TASKS[i].start_point.x) * k,
-						world_y: -230,
+						world_y: -245,
 						world_z: TASKS[i].start_point.z + (TASKS[i].end_point.world_z - TASKS[i].start_point.z) * k
 					}
 
@@ -124,7 +154,7 @@ function loopGameActionsInit(io)
 					{
 						TASKS[i].positionLast = {
 							world_x: TASKS[i].start_point.x,
-							world_y: -230,
+							world_y: -245,
 							world_z: TASKS[i].start_point.z
 						};
 					}
@@ -209,6 +239,20 @@ function eventsInit(io, socket)
 			decor: config.decorList
 		});
 
+		// TEMP CALL
+		setTimeout(function(bot, socket){
+			// add bot to game
+			ROOMS.room_id.bots[bot.id] = bot;
+
+			// add bot to map
+			socket.emit('add bot', {
+				object: bot
+			});
+		}, 3000, bots.getBot('bot_1'), socket);
+		setTimeout(function(){
+			sceneWalkBot();
+		}, 10000);
+
 	});
 
 	/**
@@ -284,6 +328,50 @@ function sceneMovePlayer(socket, targetData)
     	moveTask.path.push({
     		x: localCoordinates.x,
     		y: player.position.y,
+    		z: localCoordinates.z
+    	});
+    }
+
+    // add to loop function
+    TASKS.push(moveTask);
+}
+
+function sceneWalkBot()
+{
+	var bot = ROOMS.room_id.bots['bot_1'],
+		moveTask = {
+			action: 'move',
+			socket_id: 'bot_1',
+			path: []
+		};
+
+	// convert world position to local position by floor
+    var local_x = parseInt(bot.position.x + (config.scene.floor.width / 2)),
+        local_z = parseInt(bot.position.z + (config.scene.floor.length / 2));
+
+
+    // get coordinates on matrix
+    var move_from = getMapClickPosition(local_x, local_z),
+        move_to = getMapClickPosition(1500 - (bot.startPosition.x - randomIntInc(-bot.maxWalkDistance, bot.maxWalkDistance)), 1500 - (bot.startPosition.z - randomIntInc(-bot.maxWalkDistance, bot.maxWalkDistance)));
+
+    // get move path
+    var graph = new astar.graph(config.scene.map.matrix, {
+	        diagonal: true
+	    }),
+    	start = graph.grid[move_from.row][move_from.column],
+        end = graph.grid[move_to.row][move_to.column],
+        path = astar.core().search(graph, start, end, {
+            heuristic: astar.core().heuristics.diagonal
+        });
+
+    // create steps
+    var localCoordinates;
+    for(var i = 0; i < path.length; i++)
+    {
+    	localCoordinates = getMapPositionToPixels(path[i].x, path[i].y);
+    	moveTask.path.push({
+    		x: localCoordinates.x,
+    		y: bot.position.y,
     		z: localCoordinates.z
     	});
     }
@@ -414,6 +502,14 @@ function emit(io, socket_id, event_name, data)
 	{
 		io.sockets.connected[socket_id].emit(event_name, data);
 	}
+}
+
+/**
+ * Returns a random integer between low (inclusive) and high (inclusive)
+ */
+function randomIntInc(low, high)
+{
+    return Math.floor(Math.random() * (high - low + 1) + low);
 }
 
 function error(name, err, socket)

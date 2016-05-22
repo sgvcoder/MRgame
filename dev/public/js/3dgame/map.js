@@ -105,8 +105,6 @@ socket.on('new player data', function(data){
         if(opponents[data.id] != 'loading')
         {
         	console.log('>>> object is undefined');
-            // opponents[data.id] = 'loading';
-            // add_player(data.id);
         }
     }
     else if(data.animateAction)
@@ -123,6 +121,9 @@ socket.on('new player data', function(data){
             }
             objectRotateTo(opponents[data.id], data.position.x, data.position.z);
         }
+        // opponents[data.id].position.x = data.position.x;
+        // opponents[data.id].position.y = data.position.y;
+        // opponents[data.id].position.z = data.position.z;
         runTween(opponents[data.id], data.position, data.speed);
     }
 });
@@ -193,6 +194,10 @@ socket.on('set health to player', function(data){
 socket.on('set energi to player', function(data){
     // set health
     player.character.energi = data.energi;
+});
+
+socket.on('add bot', function(data){
+    add_bot(data);
 });
 
 socket.on('opponent disconnected', function(id){
@@ -613,6 +618,23 @@ function add_player(objectType)
             y: 0,
             z: 0
         }, 0.3, objectType, player.name);
+    });
+}
+
+function add_bot(data)
+{
+	console.log(data);
+    // load the model
+    loaderObjectFromJS.load(data.object.character.model, function (geometry, materials){
+        createScene(geometry, materials, {
+            x: data.object.position.x,
+            y: data.object.position.y,
+            z: data.object.position.z
+        }, {
+            x: 0,
+            y: 0,
+            z: 0
+        }, 0.3, 'bot_1', data.object.name);
     });
 }
 
@@ -1178,7 +1200,7 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
         m.color.setHSL(0.6, 0, 0.6);
     }
     mesh = new THREE.SkinnedMesh(geometry, new THREE.MultiMaterial(materials));
-    mesh.name = objectName + ' (' + parseInt(Math.random() * 10000) + ')';
+    mesh.name = objectName;
     mesh.scale.set(1, 1, 1);
     mesh.collision = true;
     mesh.callback = object_click;
@@ -1212,6 +1234,11 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
 
             spotLight.target = mesh;
             opponents[objectType] = mesh;
+        }
+        else if(objectType == 'bot_1')
+        {
+        	opponents[objectType] = mesh;
+            scene.add(mesh);
         }
         else
         {
