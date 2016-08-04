@@ -11,15 +11,11 @@ var config = require('../config/game3d.js');
 
 var astar = require('./astar.js'),
 	core = require('./game3d.js'),
-	bots = require('./game3dBots.js');
+	bots = require('./game3dBots.js'),
+	skills = require('./skills.js');
 
 // init loop tasks
-var TASKS = [],
-	ROOMS = {
-		room_id: {
-			bots: {}
-		}
-	};
+var TASKS = [];
 
 // calc length of cell
 var cellLength = parseInt(config.scene.floor.width / config.scene.map.matrix.length);
@@ -37,159 +33,95 @@ function loopGameActionsInit(io)
 	var loopGameActions = setInterval(function(){
 		for (var i = 0; i < TASKS.length; i++)
 		{
-			switch(TASKS[i].action)
+			if(typeof TASKS[i] != 'undefined')
 			{
-				case 'move':
-					if(TASKS[i].path.length == 0)
-					{
+				switch(TASKS[i].action)
+				{
+					case 'move':
+						if(TASKS[i].path.length == 0)
+						{
 
-					    if(TASKS[i].socket_id == 'bot_1')
-					    {
-					    	sceneWalkBot();
-					    }
+						    if(TASKS[i].socket_id == 'bot_1')
+						    {
+						    	setTimeout(function(){
+						    		sceneWalkBot();
+						    	}, 0);
+						    }
 
-						// remove task if steps out
-					    TASKS.splice(i, 1);
+							// remove task if steps out
+						    delete(TASKS[i]);
+							continue;
+						}
 
-						continue;
-					}
+						// send position to socket
+						if(TASKS[i].socket_id == 'bot_1')
+						{
+							var room = core.getRoomById('room_id');
+							// set postition to user
+							room.bots['bot_1'].position.x = TASKS[i].path[0].x;
+							room.bots['bot_1'].position.y = TASKS[i].path[0].y;
+							room.bots['bot_1'].position.z = TASKS[i].path[0].z;
 
-					// send position to socket
-					if(TASKS[i].socket_id == 'bot_1')
-					{
-						// set postition to user
-						ROOMS.room_id.bots['bot_1'].position.x = TASKS[i].path[0].x;
-						ROOMS.room_id.bots['bot_1'].position.y = TASKS[i].path[0].y;
-						ROOMS.room_id.bots['bot_1'].position.z = TASKS[i].path[0].z;
+							io.emit('new player data', {
+								id: TASKS[i].socket_id,
+								animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
+								speed: config.system.updateRate,
+								position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
+							});
+						}
+						else
+						{
+							// set postition to bot
+							core.setPlayerProperties(TASKS[i].socket_id, 'position.x', TASKS[i].path[0].x);
+							core.setPlayerProperties(TASKS[i].socket_id, 'position.y', TASKS[i].path[0].y);
+							core.setPlayerProperties(TASKS[i].socket_id, 'position.z', TASKS[i].path[0].z);
 
-						io.emit('new player data', {
-							id: TASKS[i].socket_id,
-							animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
-							speed: config.system.updateRate,
-							position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
-						});
-					}
-					else
-					{
-						// set postition to bot
-						core.setPlayerProperties(TASKS[i].socket_id, 'position.x', TASKS[i].path[0].x);
-						core.setPlayerProperties(TASKS[i].socket_id, 'position.y', TASKS[i].path[0].y);
-						core.setPlayerProperties(TASKS[i].socket_id, 'position.z', TASKS[i].path[0].z);
+							io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
+								id: TASKS[i].socket_id,
+								animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
+								speed: config.system.updateRate,
+								position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
+							});
+						}
 
-						io.sockets.connected[TASKS[i].socket_id].emit('new player data', {
-							id: TASKS[i].socket_id,
-							animateAction: (TASKS[i].path.length <= 1) ? 'stay' : 'move',
-							speed: config.system.updateRate,
-							position: {x: TASKS[i].path[0].x, y: TASKS[i].path[0].y, z: TASKS[i].path[0].z}
-						});
-					}
+						// remove curent position
+					    TASKS[i].path.splice(0, 1);
+						break;
 
-					// remove curent position
-				    TASKS[i].path.splice(0, 1);
-					break;
+					case 'skillCooldown':
+						if(skills.cooldown(io, TASKS[i]).new_status == 'remove')
+						{
+							delete(TASKS[i]);
+						}
+						break;
 
-				case 'skillCooldown':
-					// calc time left
-					var timeLeft = parseInt(TASKS[i].colldown - (new Date().getTime() - TASKS[i].useTime));
+					case 'skillAnimate':
+						var result = skills.animate(io, TASKS[i]);
+						if(result.new_status == 'remove')
+						{
+							delete(TASKS[i]);
+						}
+						else if(result.new_status == 'collision')
+						{
+							// set damage
+							calcDamage(io, TASKS[i], result);
 
-					if(timeLeft < 0)
-					{
-						// send skill cooldown to socket
-						io.sockets.connected[TASKS[i].socket_id].emit('skill cooldown', {
-							id: TASKS[i].socket_id,
-							skill_id: TASKS[i].skill_id,
-							time: -1
-						});
+							delete(TASKS[i]);
+						}
+						break;
 
-						// set recovering
-						core.setPlayerSkillProperties(TASKS[i].socket_id, TASKS[i].skillIndex, 'isRecovering', false);
-
-						// remove task
-						TASKS.splice(i, 1);
-						continue;
-					}
-
-					// send skill cooldown to socket
-					emit(io, TASKS[i].socket_id, 'skill cooldown', {
-						id: TASKS[i].socket_id,
-						skill_id: TASKS[i].skill_id,
-						time: parseInt(timeLeft / 1000)
-					});
-					break;
-
-				case 'skillAnimate':
-					// calc time passed
-					var timePassed = parseInt(new Date().getTime() - TASKS[i].useTime);
-
-					if(timePassed >= TASKS[i].active_time)
-					{
-						// send skill animate to socket
-						io.sockets.connected[TASKS[i].socket_id].emit('skill animate', {
-							id: TASKS[i].socket_id,
-							skill_id: TASKS[i].skill_id,
-							sound: TASKS[i].soundAction,
-							action: 'end'
-						});
-
-						// remove task
-						TASKS.splice(i, 1);
-						continue;
-					}
-
-					// calc distance
-					var distance = timePassed * TASKS[i].move_step_by_millisecond;
-
-					// calc position
-				    var Rab = Math.sqrt(Math.pow((TASKS[i].end_point.world_x - TASKS[i].start_point.x), 2)  + Math.pow((TASKS[i].end_point.world_z - TASKS[i].start_point.z), 2));
-				    var k = distance / Rab;
-
-				    // new position
-				    var positionEnd = {
-					    world_x: TASKS[i].start_point.x + (TASKS[i].end_point.world_x - TASKS[i].start_point.x) * k,
-						world_y: -245,
-						world_z: TASKS[i].start_point.z + (TASKS[i].end_point.world_z - TASKS[i].start_point.z) * k
-					}
-
-					if(typeof TASKS[i].positionLast == 'undefined')
-					{
-						TASKS[i].positionLast = {
-							world_x: TASKS[i].start_point.x,
-							world_y: -245,
-							world_z: TASKS[i].start_point.z
-						};
-					}
-
-					// check collision with opponents
-					var collision = checkCollisionWithPlayers({
-						x: positionEnd.world_x,
-						y: positionEnd.world_y,
-						z: positionEnd.world_z
-					}, core.getPlayerBySocketId(TASKS[i].socket_id).character.user_id);
-
-					if(collision.length > 0)
-					{
-						// stop skill animate
-						TASKS[i].useTime -= 9999999;
-						TASKS[i].soundAction = 'collision';
-						continue;
-					}
-
-					// send skill animate to socket
-					io.sockets.connected[TASKS[i].socket_id].emit('skill animate', {
-						id: TASKS[i].socket_id,
-						skill_id: TASKS[i].skill_id,
-						action: 'animate',
-						positionLast: TASKS[i].positionLast,
-						positionEnd: positionEnd,
-						speed: config.system.updateRate
-					});
-
-					// save last point
-					TASKS[i].positionLast = positionEnd;
-					break;
-
-				default: console.log('*** loop action "' + TASKS[i].action + '" not found!');
+					default: console.log('*** loop action "' + TASKS[i].action + '" not found!');
+				}
 			}
+		}
+
+		for (var i = 0; i < TASKS.length; i++)
+		{
+			// remove empty tasks
+		    if(typeof TASKS[i] == 'undefined')
+		    {
+		    	TASKS.splice(i, 1);
+		    }
 		}
 
 	}, config.system.updateRate);
@@ -241,8 +173,10 @@ function eventsInit(io, socket)
 
 		// TEMP CALL
 		setTimeout(function(bot, socket){
+			var room = core.getRoomById('room_id');
+
 			// add bot to game
-			ROOMS.room_id.bots[bot.id] = bot;
+			room.bots[bot.id] = bot;
 
 			// add bot to map
 			socket.emit('add bot', {
@@ -338,7 +272,8 @@ function sceneMovePlayer(socket, targetData)
 
 function sceneWalkBot()
 {
-	var bot = ROOMS.room_id.bots['bot_1'],
+	var room = core.getRoomById('room_id');
+	var bot = room.bots['bot_1'],
 		moveTask = {
 			action: 'move',
 			socket_id: 'bot_1',
@@ -439,33 +374,55 @@ function useSkillDistance(socket, player, skillIndex, data)
     TASKS.push(animateTask);
 }
 
-function checkCollisionWithPlayers(position, exclude_id)
+function calcDamage(io, task, collisionData)
 {
-	var players = core.getPlayers(),
-		collisions = [];
+	var room = core.getRoomById('room_id'),
+		player = core.getPlayerBySocketId(task.socket_id),
+		activeSkill,
+		target,
+		newHealth;
 
-	Object.keys(players.PlayersData).forEach(function(user_id){
-		if(user_id != exclude_id && checkDistanceBetweenPoints(position, players.PlayersData[user_id].position) <= 50)
+	// get skill info
+	for(var i = 0; i < player.skills.length; i++)
+	{
+		if(player.skills[i].id == task.skill_id)
 		{
-			// collision with player
-			collisions.push({
-				id: user_id
-			});
+			activeSkill = player.skills[i];
+			break;
 		}
-    });
+	}
 
-    return collisions;
-}
+	if(typeof activeSkill == 'undefined')
+	{
+		return false;
+	}
 
-/**
- * get distance between points
- * @param  {[type]} position_1
- * @param  {[type]} position_2
- * @return {[type]}
- */
-function checkDistanceBetweenPoints(position_1, position_2)
-{
-    return Math.sqrt(Math.pow(position_2.x - position_1.x, 2) + Math.pow(position_2.z - position_1.z, 2));
+	for(var i = 0; i < collisionData.collision.length; i++)
+	{
+		if(collisionData.isBot == true)
+		{
+			target = room.bots[collisionData.collision[i].id];
+		}
+		else
+		{
+			target = core.getSocketIdByUserId(collisionData.collision[i].id);
+		}
+	}
+
+	newHealth = target.character.health - activeSkill.damage;
+	if(newHealth < 0)
+	{
+		target.character.health = 0;
+	}
+	else
+	{
+		target.character.health = newHealth;
+	}
+
+	emit(io, task.socket_id, 'set health', {
+		id: target.id,
+		health: target.character.health
+	});
 }
 
 /**

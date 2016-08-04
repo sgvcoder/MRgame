@@ -121,9 +121,6 @@ socket.on('new player data', function(data){
             }
             objectRotateTo(opponents[data.id], data.position.x, data.position.z);
         }
-        // opponents[data.id].position.x = data.position.x;
-        // opponents[data.id].position.y = data.position.y;
-        // opponents[data.id].position.z = data.position.z;
         runTween(opponents[data.id], data.position, data.speed);
     }
 });
@@ -186,14 +183,21 @@ socket.on('skill cooldown', function(data){
 	}
 });
 
-socket.on('set health to player', function(data){
+socket.on('set health', function(data){
+	console.log(data);
     // set health
-    player.character.health = data.health;
+    if(typeof opponents[data.id] != 'undefined')
+    {
+    	opponents[data.id].character.health = data.health;
+    }
 });
 
-socket.on('set energi to player', function(data){
+socket.on('set energi', function(data){
     // set health
-    player.character.energi = data.energi;
+    if(typeof opponents[data.id] != 'undefined')
+    {
+    	opponents[data.id].character.energi = data.energi;
+    }
 });
 
 socket.on('add bot', function(data){
@@ -595,7 +599,7 @@ function _create_decor(i)
             x: decor[i].rotate.x,
             y: decor[i].rotate.y,
             z: decor[i].rotate.z
-        }, decor[i].scale, decor[i].type, decor[i].objectName);
+        }, decor[i].scale, decor[i].type, {name: decor[i].objectName});
 
         // next load
         if(i < (decor.length - 1))
@@ -617,7 +621,7 @@ function add_player(objectType)
             x: 0,
             y: 0,
             z: 0
-        }, 0.3, objectType, player.name);
+        }, 0.3, objectType, player.character);
     });
 }
 
@@ -634,7 +638,7 @@ function add_bot(data)
             x: 0,
             y: 0,
             z: 0
-        }, 0.3, 'bot_1', data.object.name);
+        }, 0.3, 'bot_1', data.object.character);
     });
 }
 
@@ -736,8 +740,8 @@ function pingOtherObjectsForPlayer()
             interfaceShowObjectTitle(opponents[key].uuid, opponents[key].name, screen_position.x, screen_position.y);
 
         	// set info
-            interfaceSetHealth(opponents[key].uuid, ((player.character.health * 100) / player.character.maxHealth));
-            interfaceSetEnergi(opponents[key].uuid, ((player.character.energi * 100) / player.character.maxEnergi));
+            interfaceSetHealth(opponents[key].uuid, ((opponents[key].character.health * 100) / opponents[key].character.maxHealth));
+            interfaceSetEnergi(opponents[key].uuid, ((opponents[key].character.energi * 100) / opponents[key].character.maxEnergi));
         }
     });
 }
@@ -747,8 +751,8 @@ function showCharactersInfo()
 	if(typeof opponents['/#' + socket.id] !== 'undefined' && opponents['/#' + socket.id] != null && opponents['/#' + socket.id] != 'loading')
 	{
 	    // set info
-	    interfaceSetHealth(opponents['/#' + socket.id].uuid, ((player.character.health * 100) / player.character.maxHealth));
-	    interfaceSetEnergi(opponents['/#' + socket.id].uuid, ((player.character.energi * 100) / player.character.maxEnergi));
+	    interfaceSetHealth(opponents['/#' + socket.id].uuid, ((opponents['/#' + socket.id].character.health * 100) / opponents['/#' + socket.id].character.maxHealth));
+	    interfaceSetEnergi(opponents['/#' + socket.id].uuid, ((opponents['/#' + socket.id].character.energi * 100) / opponents['/#' + socket.id].character.maxEnergi));
 	}
 }
 
@@ -1183,7 +1187,7 @@ function soundSetVolumeByDistance(soundName, object)
     }
 }
 
-function createScene(geometry, materials, position, rotation, s, objectType, objectName)
+function createScene(geometry, materials, position, rotation, s, objectType, character)
 {
     geometry.computeBoundingBox();
     var bb = geometry.boundingBox;
@@ -1200,7 +1204,7 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
         m.color.setHSL(0.6, 0, 0.6);
     }
     mesh = new THREE.SkinnedMesh(geometry, new THREE.MultiMaterial(materials));
-    mesh.name = objectName;
+    mesh.name = character.name;
     mesh.scale.set(1, 1, 1);
     mesh.collision = true;
     mesh.callback = object_click;
@@ -1214,7 +1218,7 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
 
     if(objectType == 'decor')
     {
-        sceneObjects[objectName] = mesh;
+        sceneObjects[character.name] = mesh;
         sceneCollisionObjects.push(mesh);
         scene.add(mesh);
     }
@@ -1226,14 +1230,15 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
             move: mesh.mixer.clipAction(geometry.animations[1], null)
         };
 
+        mesh.character = character;
+
         if(objectType == '/#' + socket.id)
         {
         	// curent user
             // sceneObjects.player = mesh;
-            scene.add(mesh);
-
-            spotLight.target = mesh;
             opponents[objectType] = mesh;
+            spotLight.target = mesh;
+            scene.add(mesh);
         }
         else if(objectType == 'bot_1')
         {
@@ -1242,8 +1247,8 @@ function createScene(geometry, materials, position, rotation, s, objectType, obj
         }
         else
         {
-            opponents[objectType] = mesh;
             sceneCollisionObjects.push(mesh);
+            opponents[objectType] = mesh;
             scene.add(mesh);
         }
 

@@ -11,12 +11,12 @@ var config = require('../config/game3d.js'),
 
 var BOTS = {
 	bot_1: {
-		name: 'Bot 1',
 		moveSpeed: 4,
 		position: {x: 0, y: config.scene.floor.position.y, z: 0},
 		startPosition: {x: 0, y: config.scene.floor.position.y, z: 0},
 		maxWalkDistance: 100,
 		character: {
+			name: 'Bot 1',
 			avatar: 'butterfly.jpg',
 			health: 600,
 			energi: 400,

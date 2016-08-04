@@ -5,11 +5,14 @@ module.exports = {
 	getCharacter: getCharacter,
 	createCharacter: createCharacter,
 	action: action,
+	getRoomById: getRoomById,
 	getPlayers: getPlayers,
 	getPlayerBySocketId: getPlayerBySocketId,
 	getSocketIdByUserId: getSocketIdByUserId,
 	setPlayerProperties: setPlayerProperties,
-	setPlayerSkillProperties: setPlayerSkillProperties
+	setPlayerSkillProperties: setPlayerSkillProperties,
+	checkCollisionWithPlayers: checkCollisionWithPlayers,
+	checkCollisionWithBots: checkCollisionWithBots
 };
 
 // load up the game model
@@ -23,11 +26,22 @@ var mysql = require('mysql'),
 var connection = mysql.createConnection(dbconfig.connection);
 connection.query('USE ' + dbconfig.database);
 
-var PlayersData = {},
+var ROOMS = {
+		room_id: {
+			bots: {}
+		}
+	},
+	PlayersData = {},
 	PlayersSocketToId = {},
 	skills_tree = {
 		branches: []
 	};
+
+function getRoomById(room_id)
+{
+	return ROOMS[room_id];
+}
+
 
 function getPlayers()
 {
@@ -496,6 +510,52 @@ function createCharacter(io, socket, data)
 
     	socket.emit('reload page', true);
     });
+}
+
+function checkCollisionWithPlayers(position, exclude_id)
+{
+	var collisions = [];
+
+	Object.keys(PlayersData).forEach(function(user_id){
+		if(user_id != exclude_id && checkDistanceBetweenPoints(position, PlayersData[user_id].position) <= 10)
+		{
+			// collision with player
+			collisions.push({
+				id: user_id
+			});
+		}
+    });
+
+    return collisions;
+}
+
+function checkCollisionWithBots(position, room_id)
+{
+	var bots = getRoomById(room_id).bots;
+	var collisions = [];
+
+	Object.keys(bots).forEach(function(i){
+		if(checkDistanceBetweenPoints(position, bots[i].position) <= 50)
+		{
+			// collision with player
+			collisions.push({
+				id: i
+			});
+		}
+    });
+
+    return collisions;
+}
+
+/**
+ * get distance between points
+ * @param  {[type]} position_1
+ * @param  {[type]} position_2
+ * @return {[type]}
+ */
+function checkDistanceBetweenPoints(position_1, position_2)
+{
+    return Math.sqrt(Math.pow(position_2.x - position_1.x, 2) + Math.pow(position_2.z - position_1.z, 2));
 }
 
 function randomIntInc()
